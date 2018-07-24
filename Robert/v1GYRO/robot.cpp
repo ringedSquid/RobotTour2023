@@ -105,7 +105,8 @@ void robot::update() {
         dist = robotSimplePursuit->getCurrentGoalPointDist();
 
         if (robotSimplePursuit->atLastPoint()) {
-          dist -= centerToDowel;
+          dist += centerToDowel;
+          
         }
 
         //vx = robotSimplePursuit->getAvgVx();

@@ -63,7 +63,8 @@ controller robotController
   &stepperL, &stepperR,
   STEPS_PER_REV, TURN_US,
   IMU_UPDATE_US, &steppersEngaged_mtx,
-  &engageSteppers, &engageSteppersHandle
+  &engageSteppers, &engageSteppersHandle,
+  HIGH_PASS_FREQ
 );
 
 simplePursuit robotSimplePursuit(MAX_VX, DIST_TO_DOWEL);
@@ -109,19 +110,21 @@ void setup() {
   oled.setFont(Adafruit5x7);
   oled.clear();
   oled.println("INIT...");
-  oled.set1X();
-  oled.print("DO NOT MOVE ROBOT!");
-
-  delay(1000);
 
   //gyro init
   if (!BMI160.begin(BMI160GenClass::I2C_MODE, Wire, IMU_ADDRESS)) {
     STATE = IMU_ERROR;
   }
   //BMI160.setGyroRate(11);
+  delay(500);
+  oled.clear();
+  oled.println("INIT GYRO");
+  oled.set1X();
+  oled.print("DO NOT MOVE");
+  delay(500);
   BMI160.setFullScaleGyroRange(1); //1000 deg/s
   BMI160.autoCalibrateGyroOffset();
-  
+  delay(500);
 
   //SD begin
   if (SD.begin(SD_CS) == 0) {
@@ -151,38 +154,62 @@ void setup() {
     oled.set2X();
     oled.println("IDLE");
   }
-  
-/*
-  delay(2000);
-  robotController.init();
-  Robot.init(); 
-  oled.clear();
-  oled.set1X();
-  oled.println("START");
-  digitalWrite(STEP_ENABLE, HIGH);
-  for (int i=0; i<50; i++) {
-    robotController.setTheta(PI/2);
-    while (robotController.getState() != 0) {
-      robotController.update();
+
+  if (PATH_MODE == 2) {
+    delay(2000);
+    robotController.init();
+    Robot.init(1); 
+    oled.clear();
+    oled.set1X();
+    oled.println("TESTING TURN");
+    digitalWrite(STEP_ENABLE, HIGH);
+    for (int i=0; i<50; i++) {
+      robotController.setTheta(PI/2);
+      while (robotController.getState() != 0) {
+        robotController.update();
+      }
+      delay(500);
+      robotController.setTheta(0);
+      while (robotController.getState() != 0) {
+        robotController.update();
+      }
+      delay(500);
+      robotController.setTheta(PI);
+      while (robotController.getState() != 0) {
+        robotController.update();
+      }
+      delay(500);
+      robotController.setTheta(0);
+      while (robotController.getState() != 0) {
+        robotController.update();
+      }
+      delay(500);
     }
-    delay(500);
-    robotController.setTheta(0);
-    while (robotController.getState() != 0) {
-      robotController.update();
-    }
-    delay(500);
-    robotController.setTheta(PI);
-    while (robotController.getState() != 0) {
-      robotController.update();
-    }
-    delay(500);
-    robotController.setTheta(0);
-    while (robotController.getState() != 0) {
-      robotController.update();
-    }
-    delay(500);
   }
-  */
+  
+  if (PATH_MODE == 3) {
+    delay(2000);
+    robotController.init();
+    robotController.setTheta(PI/2);
+    Robot.init(1); 
+    oled.clear();
+    oled.set1X();
+    oled.println("TESTING FORW");
+    digitalWrite(STEP_ENABLE, HIGH);
+    robotController.setMaxVx(MAX_VX);
+    for (int i=0; i<50; i++) {
+      robotController.moveX(300);
+      while (robotController.getState() != 0) {
+        robotController.update();
+      }
+      delay(500);
+      robotController.moveX(-300);
+      while (robotController.getState() != 0) {
+        robotController.update();
+      }
+      delay(500);
+    }
+  }
   
 }
 

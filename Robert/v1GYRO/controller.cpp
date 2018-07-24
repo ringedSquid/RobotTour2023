@@ -4,6 +4,7 @@
 #include <AccelStepper.h>
 #include "controller.h"
 #include <BMI160Gen.h>
+#include <Filters.h>
 
 #define RIGHT_OFF 1.00
 
@@ -14,7 +15,8 @@ controller::controller
   uint32_t iStepsPerRev, uint32_t iTurnInterval,
   uint32_t iIntervalIMUus, std::mutex *iSteppersEngaged_mtx,
   void (*iEngageSteppers)(void * parameter),
-  TaskHandle_t *iEngageSteppersHandle
+  TaskHandle_t *iEngageSteppersHandle,
+  double iHighPassFreq
 ) 
 {
   wheelRadius = iWheelRadius;
@@ -27,6 +29,8 @@ controller::controller
   steppersEngaged_mtx = iSteppersEngaged_mtx;
   engageSteppers = iEngageSteppers;
   engageSteppersHandle = iEngageSteppersHandle;
+  highPassFreq = iHighPassFreq;
+  highPass = new FilterOnePole(HIGHPASS, highPassFreq);
 }
 
 void controller::init(double iTheta) {
@@ -57,6 +61,7 @@ void controller::update() {
   updateTheta();
   double deltaTheta = targetTheta - theta;
   //Serial.println(deltaTheta);
+  //Serial.println(theta*180/PI);
   switch (STATE) {
     case 0:
       break;
@@ -78,7 +83,7 @@ void controller::update() {
       else if (deltaTheta < -PI) {
         deltaTheta += TWO_PI;
       }
-      if (abs(targetTheta - theta) < 0.028) {
+      if (abs(targetTheta - theta) < 0.001) {
         steppersEngaged_mtx->lock();
         stepperL->setCurrentPosition(stepperL->targetPosition());
         stepperR->setCurrentPosition(stepperR->targetPosition());
@@ -119,7 +124,12 @@ void controller::updateTheta() {
   if (micros() - oldIMUus > intervalIMUus) {
     double angVel = ((BMI160.getRotationZ() * 1000.0) / 32768.0) * PI/180;
     double interval = micros() - oldIMUus;
-    theta += angVel*(interval/pow(10, 6));
+    double dtheta = angVel*(interval/pow(10, 6));
+    if (abs(angVel) > highPassFreq) {
+      theta += dtheta;
+    }
+    //highPass->input(theta);
+    //theta = highPass->output();
     while (theta > PI) {
       theta -= TWO_PI;
     }
