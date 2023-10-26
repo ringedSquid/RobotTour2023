@@ -1,17 +1,39 @@
-#include <PIDController.h>
 #include "hmap.h"
+#include "config.h"
+#include <Filters.h>
+#include <PID_v1.h>
+
+FilterOnePole RL(LOWPASS, 2);
+FilterOnePole LL(LOWPASS, 2);
 
 
-int ticks = 0;
-int oldticks = 0;
-int count = 0;
-double a,b,c,d,e,f,g,h,i,j;
-double oldt = 0;
-double newt = 0;
-void countUp() {
-  ticks++;
+//Encoders
+
+volatile long rightEncoderPos=100, leftEncoderPos=100;
+
+//Encoder ISR
+void rightEncoderTick() {
+  rightEncoderPos++;
 }
 
+void leftEncoderTick() {
+  leftEncoderPos++;
+
+}
+
+//Motors
+
+double Rrpm = 0;
+double Rmotor_pwm = 0;
+double Rsetpoint = 5;
+
+double Lrpm = 0;
+double Lmotor_pwm = 0;
+double Lsetpoint = 5;
+
+PID rPID(&Rrpm, &Rmotor_pwm, &Rsetpoint, MR_Kp, MR_Ki, MR_Kd, DIRECT);
+PID lPID(&Lrpm, &Lmotor_pwm, &Lsetpoint, ML_Kp, ML_Ki, ML_Kd, DIRECT);
+  
 void setup()    {
   Serial.begin(115200);
   pinMode(M1, OUTPUT);
@@ -19,28 +41,30 @@ void setup()    {
   pinMode(M3, OUTPUT);
   pinMode(M4, OUTPUT);
   pinMode(C1, INPUT);
-  pinMode(C2, INPUT);
-  pinMode(C3, INPUT);
   pinMode(C4, INPUT);
-  
 
-  attachInterrupt(digitalPinToInterrupt(C3), countUp, RISING);
-  oldt = millis();
-  analogWrite(M1, 0);
-  analogWrite(M2, 0);
-  
+  digitalWrite(M2, LOW);
+  digitalWrite(M3, LOW);
+
+  attachInterrupt(digitalPinToInterrupt(C4), rightEncoderTick, RISING);
+  attachInterrupt(digitalPinToInterrupt(C1), leftEncoderTick, RISING);
+  rPID.SetMode(AUTOMATIC);
+  lPID.SetMode(AUTOMATIC);
 
   }
 
 void loop() {
-  oldticks = ticks;
-  oldt = millis();
-  //Period when ticks means something, so insert code below
+  //Get RPM
+  double oldt = millis();
+  long RoldPos = rightEncoderPos;
+  long LoldPos = leftEncoderPos;
   delay(5);
-  Serial.println(((ticks - oldticks)/(millis() - oldt))*6000/12);
-
-
-
-  
-  
+  rPID.Compute();
+  lPID.Compute();
+  analogWrite(M1, (int)Rmotor_pwm);
+  analogWrite(M4, (int)Lmotor_pwm);
+  RL.input((((rightEncoderPos - RoldPos)/(millis() - oldt))/60)*6000);
+  LL.input((((leftEncoderPos - LoldPos)/(millis() - oldt))/60)*6000);
+  Rrpm = RL.output();
+  Lrpm = LL.output();
 }
