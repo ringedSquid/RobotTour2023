@@ -1,0 +1,4 @@
+class Robot {
+  public:
+  private:
+}
