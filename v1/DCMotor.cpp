@@ -4,7 +4,7 @@
 DCMotor::DCMotor(byte c1, byte c2, byte m1, byte m2, 
                  byte ipchannel1, byte ipchannel2,
                  double ikp, double iki, double ikd, 
-                 double uInterval) {
+                 double uInterval, unsigned long iTpr) {
   encoderP1 = c1;
   encoderP2 = c2;
   motorP1 = m1;
@@ -15,7 +15,9 @@ DCMotor::DCMotor(byte c1, byte c2, byte m1, byte m2,
   kp = ikp;
   ki = iki;
   kd = ikd;
-  rpmPID = new PID(&currentRPM, &motorOut, &targetRPM, kp, ki, kd, DIRECT);
+  rpmPID = new PID(&currentAv, &motorOut, &targetAv, kp, ki, kd, DIRECT);
+  tpr = iTpr;
+  toRadPerSec = 1000000.0 * TWO_PI / tpr;
 }
 
 void DCMotor::init() {
@@ -31,11 +33,11 @@ void DCMotor::init() {
   
   rpmPID->SetOutputLimits(-(int)(pow(2, 15)), (int)(pow(2, 15)-1));
   disable();
-  targetRPM = 0;
-  currentRPM = 0;
+  targetAv = 0;
+  currentAv = 0;
   ticks = 0;
   oldticks = 0;
-  oldt = millis();
+  oldt = micros();
   
 }
 
@@ -63,7 +65,7 @@ void DCMotor::disable() {
 }
 
 void DCMotor::motorUpdate() { 
-  currentRPM = getRPM();
+  computeAv();
   rpmPID->Compute();
   if (motorOut < 0) {
     ledcWrite(pchannel1, abs(motorOut));
@@ -83,15 +85,39 @@ void DCMotor::motorUpdate() {
   }
 }
 
+void DCMotor::computeAv() {
+  unsigned long t = micros();
+  if (t-oldt > updateInt) {
+    currentAv = (ticks-oldticks)/(double)(t-oldt)*toRadPerSec;
+    oldt = micros();
+    oldticks = ticks;
+  }
+}
+
+void DCMotor::setTPMi(double tpmi) {
+  targetAv = tpmi * toRadPerSec;
+}
+
+void DCMotor::setRPS(double rps) {
+  targetAv = rps;
+}
+
 void DCMotor::setRPM(double rpm) {
-  targetRPM = rpm;
+  targetAv = (rpm/60)*TWO_PI;
+}
+
+double DCMotor::getTPMi() {
+  return currentAv/toRadPerSec;
+}
+
+double DCMotor::getRPS() {
+  return currentAv;
 }
 
 double DCMotor::getRPM() {
-  if (millis() - oldt > updateInt) {
-    currentRPM = (ticks-oldticks)/(millis()-oldt)*60*1000/68;
-    oldt = millis();
-    oldticks = ticks;
-  }
-  return currentRPM;
+  return (currentAv*60)/TWO_PI;
+}
+
+long DCMotor::getTicks() {
+  return ticks;
 }

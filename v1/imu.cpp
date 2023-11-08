@@ -1,3 +1,4 @@
+/*
 #include <REG.h>
 #include <wit_c_sdk.h>
 #include <Arduino.h>
@@ -27,3 +28,4 @@ static void SensorDataUpdata(uint32_t uiReg, uint32_t uiRegNum) {
   
 }
 static void Delayms(uint16_t ucMs);
+*/
