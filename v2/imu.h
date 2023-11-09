@@ -14,7 +14,9 @@ using namespace Eigen;
 class IMU {
   private:
     Vector3d orient;
-    Vector3d aVel;
+    //Vector3d aVel;
+    Vector3d pose;
+    Vector3d linVel;
 
     Vector3d orientOffset;
 
@@ -35,7 +37,7 @@ class IMU {
     
   public:
     IMU(uint32_t iintervalus, 
-    void init(Vector3D);
+    void init(Vector3d iPose, Vector3d iOrient);
     void update();
     void computelinVel();
     void computePose();

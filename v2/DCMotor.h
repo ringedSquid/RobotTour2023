@@ -20,7 +20,7 @@ class DCMotor {
 
     //Difference vars
     long oldTicks;
-    long ticks;
+    volatile long ticks;
 
     uint32_t oldus;
     uint32_t intervalus;

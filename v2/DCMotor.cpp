@@ -98,6 +98,27 @@ void DCMotor::update() {
   }
 }
 
+void DCMotor::tickEncoder() {
+  if (digitalRead(encoderP2) == HIGH) {
+    ticks++;
+  }
+  else {
+    ticks--;
+  }
+}
+
+double DCMotor::getTPus() {
+  return currentTPus;
+}
+
+double DCMotor::getRPS() {
+  return getTPus()*toRPS;
+}
+ 
+double DCMotor::getRPM() {
+  return getTPus()*toRPM;
+}
+
 long DCMotor::getTicks() {
   return ticks;
 }

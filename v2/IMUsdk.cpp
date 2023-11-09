@@ -105,7 +105,7 @@ static void CopeWitData(uint8_t ucIndex, uint16_t *p_data, uint32_t uiLen)
         case WIT_PRESS: uiReg1 = PressureL;  break;
         case WIT_GPS:   uiReg1 = LonL;  break;
         case WIT_VELOCITY: uiReg1 = GPSHeight;  break;
-        case WIT_QUATER:    uiReg1 = q0;  break;
+        case WIT_QUATER:    uiReg1 = Q0;  break;
         case WIT_GSA:   uiReg1 = SVNUM;  break;
         case WIT_REGVALUE:  uiReg1 = s_uiReadRegIndex;  break;
     default:

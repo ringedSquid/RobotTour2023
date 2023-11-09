@@ -88,10 +88,10 @@ extern "C" {
 #define GPSYAW          0x4e
 #define GPSVL       0x4f
 #define GPSVH       0x50
-#define q0          0x51
-#define q1          0x52
-#define q2          0x53
-#define q3          0x54
+#define Q0          0x51
+#define Q1          0x52
+#define Q2          0x53
+#define Q3          0x54
 #define SVNUM       0x55
 #define PDOP        0x56
 #define HDOP        0x57
