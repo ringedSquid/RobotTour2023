@@ -29,20 +29,21 @@ void Odometry::init(Vector3d iPose, double iTheta) {
 
 void Odometry::update() {
   double currentus = micros();
-  double currentML = motorL->getRPS() * wheelRadius;
-  double currentMR = motorR->getRPS() * wheelRadius;
+  double currentML = motorL->getRPS();
+  double currentMR = motorR->getRPS();
 
   //update the pos;
   if (currentus - oldus > intervalus) {
     linVelx = (wheelRadius/2)*(currentMR+currentML);
-    angVel = (wheelRadius/trackWidth)*(currentMR-currentML); //RPS
+    angVel = (wheelRadius/trackWidth)*(currentML-currentMR); //RPS
 
-    theta += (angVel * (currentus-oldus)) / pow(10, 6);
-    pose(0) += (linVelx * cos(theta) * (currentus-oldus)) / pow(10, 6);
-    pose(1) += (linVelx * sin(theta) * (currentus-oldus)) / pow(10, 6);
+    theta += angVel * ((currentus-oldus) / pow(10, 6));
+    pose(0) += linVelx * cos(theta) * ((currentus-oldus) / pow(10, 6));
+    pose(1) += linVelx * sin(theta) * ((currentus-oldus) / pow(10, 6));
 
     oldLinVelx = linVelx;
     oldAngVel = angVel;
+    oldus = currentus;
   }
 }
 
@@ -86,6 +87,10 @@ double Odometry::getY() {
 
 double Odometry::getZ() {
   return pose(2);
+}
+
+double Odometry::getTheta() {
+  return theta;
 }
 
 Vector3d Odometry::getPose() {

@@ -99,7 +99,7 @@ void DCMotor::update() {
 }
 
 void DCMotor::tickEncoder() {
-  if (digitalRead(encoderP2) == HIGH) {
+  if (digitalRead(encoderP1) == HIGH) {
     ticks++;
   }
   else {

@@ -46,6 +46,7 @@ class Odometry {
     double getX();
     double getY();
     double getZ();
+    double getTheta();
 
     Vector3d getPose();
     Vector3d getXYTheta();
