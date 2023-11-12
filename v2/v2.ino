@@ -24,8 +24,6 @@ void setup() {
   motorR.init();
   Vector3d initPos(0, 0, 0);
   poop.init(initPos, 0);
-
-  
 }
 
 double oldt = millis();
