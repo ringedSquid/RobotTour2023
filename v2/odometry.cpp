@@ -14,7 +14,7 @@ Odometry::Odometry(DCMotor *iMotorL, DCMotor *iMotorR,
   intervalus = iintervalus;
 }
 
-void Odometry::init(Vector3d iPose, double iTheta) {
+void Odometry::init(Vector2d iPose, double iTheta) {
   pose = iPose;
   theta = iTheta;
 
@@ -56,7 +56,7 @@ void Odometry::update() {
   }
 }
 
-void Odometry::setPose(Vector3d newPose) {
+void Odometry::setPose(Vector2d newPose) {
   pose = newPose;
 }
 
@@ -66,10 +66,6 @@ void Odometry::setX(double newX) {
 
 void Odometry::setY(double newY) {
   pose(1) = newY;
-}
-
-void Odometry::setZ(double newZ) {
-  pose(2) = newZ;
 }
 
 void Odometry::setXYTheta(Vector3d newXYTheta) {
@@ -94,18 +90,23 @@ double Odometry::getY() {
   return pose(1);
 }
 
-double Odometry::getZ() {
-  return pose(2);
-}
 
 double Odometry::getTheta() {
   return theta;
 }
 
-Vector3d Odometry::getPose() {
+Vector2d Odometry::getPose() {
   return pose;
 }
 
 Vector3d Odometry::getXYTheta() {
   return Vector3d(pose(0), pose(1), theta);
+}
+
+//inverse kinematics
+double Odometry::computeRRPS(double targetLinVelx, double targetAngVel) {
+  return (targetLinVelx/wheelRadius)+(trackWidth/2)*(targetAngVel/wheelRadius);
+}
+double Odometry::computeLRPS(double targetLinVelx, double targetAngVel) {
+  return (targetLinVelx/wheelRadius)-(trackWidth/2)*(targetAngVel/wheelRadius);
 }

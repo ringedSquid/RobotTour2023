@@ -17,7 +17,7 @@ class Odometry {
     double wheelRadius;
 
     //Calculated values
-    Vector3d pose;
+    Vector2d pose;
     double linVelx;
     double angVel;
     double theta;
@@ -32,12 +32,11 @@ class Odometry {
     Odometry(DCMotor *iMotorL, DCMotor *iMotorR,
              double iTrackWidth, double iWheelRadius,
              uint32_t iintervalus);
-    void init(Vector3d iPose, double iTheta);
+    void init(Vector2d iPose, double iTheta);
     void update();
-    void setPose(Vector3d newPose);
+    void setPose(Vector2d newPose);
     void setX(double newX);
     void setY(double newY);
-    void setZ(double newZ);
     void setXYTheta(Vector3d newXYTheta);
 
     double getLinVelx();
@@ -45,11 +44,14 @@ class Odometry {
     
     double getX();
     double getY();
-    double getZ();
     double getTheta();
 
-    Vector3d getPose();
+    Vector2d getPose();
     Vector3d getXYTheta();
+
+    //inverse kinematics
+    double computeRRPS(double targetLinVelx, double targetAngVel);
+    double computeLRPS(double targetLinVelx, double targetAngVel);
     
 };
 

@@ -8,7 +8,6 @@
 
 #define PATH_RES 100
 #define INVALID_P -2023.0
-#define FAKE_INF 69420.0
 
 #include <ArduinoEigenDense.h>
 using namespace Eigen;
@@ -31,13 +30,23 @@ class PurePursuitController {
 
     //rad/s
     double maxAngVel;
+
+    //stuff
+    double targetAngVel;
+
+    //timing
+    uint32_t oldus;
+    uint32_t intervalus;
     
   public:
-    PurePursuitController(double iLookAhead, double iKp, double iMaxAngVel);
+    PurePursuitController(double iLookAhead, double iKp, double iMaxAngVel, uint32_t iintervalus);
 
     void init();
     void loadPath(Vector2d newPath[], uint8_t pathSize);
-    double getAngVel(Vector3d XYTheta);
+    void update(Vector3d XYTheta);
+    void computeAngVel(Vector3d XYTheta);
+    
+    double getTargetAngVel();
 };
 
 

@@ -15,8 +15,8 @@ DCMotor::DCMotor(uint8_t iEncoderP1, uint8_t iEncoderP2,
   PWMChannel2 = iPWMChannel2;
   intervalus = iintervalus;
   TPR = iTPR;
-  toRPS = (TWO_PI * pow(10, 6)) / iTPR;
-  toRPM = (6 * pow(10, 7)) / iTPR;
+  toRPS = (TWO_PI * pow(10, 6)) / (double)iTPR;
+  toRPM = (6 * pow(10, 7)) / (double)iTPR;
   Kp = iKp;
   Ki = iKi;
   Kd = iKd;
@@ -91,12 +91,11 @@ void DCMotor::update() {
     ledcWrite(PWMChannel2, abs(motorPWM));
   }
   else {
-    if (motorPWM < 0) {
-      ledcWrite(PWMChannel2, 0);
-      ledcWrite(PWMChannel1, abs(motorPWM));
-    }
+    ledcWrite(PWMChannel2, 0);
+    ledcWrite(PWMChannel1, abs(motorPWM));
   }
 }
+
 
 void DCMotor::tickEncoder() {
   if (digitalRead(encoderP1) == HIGH) {

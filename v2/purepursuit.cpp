@@ -2,14 +2,17 @@
 #include <ArduinoEigenDense.h>
 using namespace Eigen;
 
-PurePursuitController::PurePursuitController(double iLookAhead, double iKp, double iMaxAngVel) {
+PurePursuitController::PurePursuitController(double iLookAhead, double iKp, double iMaxAngVel, uint32_t iintervalus) {
   lookAhead = iLookAhead;
   kp = iKp;
   maxAngVel = iMaxAngVel;
+  intervalus = iintervalus;
 }
 
 void PurePursuitController::init() {
   lastFoundIndex = 0;
+  targetAngVel = 0;
+  oldus = micros();
   //(-2023.0, -2023.0) represents an invalid point (it doesn't make sense in our context)
   for (int i=0; i<PATH_RES; i++) {
     path[i](0) = INVALID_P;
@@ -21,6 +24,13 @@ void PurePursuitController::loadPath(Vector2d newPath[], uint8_t pathSize) {
   for (int i=0; i<pathSize; i++) {
     path[i](0) = newPath[i][0];
     path[i](1) = newPath[i][1];
+  }
+}
+
+void PurePursuitController::update(Vector3d XYTheta) {
+  if (micros() - oldus > intervalus) {
+    computeAngVel(XYTheta);
+    oldus = micros();
   }
 }
 
@@ -121,7 +131,7 @@ Vector2d PurePursuitController::getGoalPoint(Vector2d pose) {
   return goalPoint;
 }
 
-double PurePursuitController::getAngVel(Vector3d XYTheta) {
+void PurePursuitController::computeAngVel(Vector3d XYTheta) {
   Vector2d goalPoint = getGoalPoint(Vector2d(XYTheta(0), XYTheta(1)));
   double targetTheta = atan2(XYTheta(1) - goalPoint(1), XYTheta(0) - goalPoint(0));;
 
@@ -132,5 +142,10 @@ double PurePursuitController::getAngVel(Vector3d XYTheta) {
   if (abs(deltaTheta) > PI) {
     deltaTheta = -1 * sgn(deltaTheta) * (TWO_PI - abs(deltaTheta));
   }
-  return deltaTheta * kp;
+  deltaTheta = deltaTheta * kp;
+  targetAngVel = (deltaTheta > maxAngVel) ? maxAngVel : deltaTheta;
+}
+
+double PurePursuitController::getTargetAngVel() {
+  return targetAngVel;
 }

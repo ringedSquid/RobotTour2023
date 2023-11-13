@@ -1,13 +1,56 @@
-#include "hmap.h"
+#include "CONFIG.h"
+#include "PATH0.h"
+
 #include "DCMotor.h"
 #include "odometry.h"
+#include "purepursuit.h"
+#include "robot.h"
+
 #include <ArduinoEigenDense.h>
 using namespace Eigen;
 
-DCMotor motorL(EC3, EC4, M3, M4, 0, 1, (uint32_t)50*pow(10, 3), 7*93, 0, 0, 0);
-DCMotor motorR(EC2, EC1, M2, M1, 2, 3, (uint32_t)50*pow(10, 3), 7*93, 0, 0, 0);
-Odometry poop(&motorL, &motorR, 114.09, 16, (uint32_t)80*pow(10, 3));
+//Init objects
+DCMotor motorL
+(
+  ENCODER_L_1, ENCODER_L_2, 
+  MOTOR_L_1, MOTOR_L_2, 
+  0, 1, 
+  MOTOR_INTERVAL_US, TICKS_PER_REV, 
+  MOTOR_L_KP, MOTOR_L_KI, MOTOR_L_KD
+);
+               
+DCMotor motorR
+(
+  ENCODER_R_2, ENCODER_R_1, 
+  MOTOR_R_2, MOTOR_R_1, 
+  2, 3, 
+  MOTOR_INTERVAL_US, TICKS_PER_REV, 
+  MOTOR_R_KP, MOTOR_R_KI, MOTOR_R_KD
+);
 
+Odometry odo
+(
+  &motorL, &motorR, 
+  WIDTH_TRACK, RADIUS_WHEEL, 
+  ODOMETRY_INTERVAL_US
+);
+
+PurePursuitController ppc
+(
+  PURE_PURSUIT_LOOKAHEAD,
+  PURE_PURSUIT_KP,
+  PURE_PURSUIT_MAX_AV,
+  PURE_PURSUIT_INTERVAL_US
+);
+
+Robot robot
+(
+  &motorL, &motorR,
+  &odo,
+  &ppc
+);
+
+//Interrupts
 void motorInterruptHandlerL() {
   motorL.tickEncoder();
 }
@@ -16,30 +59,118 @@ void motorInterruptHandlerR() {
   motorR.tickEncoder();
 }
 
-void setup() {
-  Serial.begin(115200);
-  attachInterrupt(digitalPinToInterrupt(EC4), motorInterruptHandlerL, RISING);
-  attachInterrupt(digitalPinToInterrupt(EC1), motorInterruptHandlerR, RISING);
-  motorL.init();
-  motorR.init();
-  Vector3d initPos(0, 0, 0);
-  poop.init(initPos, 0);
+//Globals
+uint8_t STATE;
+Vector2d PATH[] = {PATH0};
+
+
+//Button handling code
+uint8_t BTN_PINS[] = {BT1, BT2};
+bool BTN_PREV_STATES[] = {LOW, LOW};
+
+bool BTN_STATE(uint8_t index) {
+  bool buttonstate = digitalRead(BTN_PINS[index]);
+  if (buttonstate != BTN_PREV_STATES[index]) {
+    BTN_PREV_STATES[index] = buttonstate;
+    if (buttonstate == HIGH) {
+      return true;
+    }
+  }
+  return false;
 }
 
-double oldt = millis();
-Vector3d buff;
+//LED State updates
+void LED_STATE() {
+  switch(STATE) {
+    case INIT:
+      digitalWrite(RED, LOW);
+      digitalWrite(GRN, LOW);
+      break;
+    case IDLE:
+      digitalWrite(RED, LOW);
+      digitalWrite(GRN, LOW);
+      break;
+    case READY:
+      digitalWrite(RED, LOW);
+      digitalWrite(GRN, HIGH);
+      break;
+    case RUNNING:
+      digitalWrite(RED, HIGH);
+      digitalWrite(GRN, LOW);
+      break;
+    default:
+      digitalWrite(RED, LOW);
+      digitalWrite(GRN, LOW);
+      break;
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  
+  //init pins
+  pinMode(RED, OUTPUT);
+  pinMode(GRN, OUTPUT);
+  pinMode(BT1, INPUT);
+  pinMode(BT2, INPUT);
+
+  //init state;
+  STATE = INIT;
+  LED_STATE();
+
+  //Attach interrupts
+  attachInterrupt(digitalPinToInterrupt(ENCODER_R_1), motorInterruptHandlerR, RISING);
+  attachInterrupt(digitalPinToInterrupt(ENCODER_L_2), motorInterruptHandlerL, RISING);
+
+  //Init objects
+  robot.init();
+
+  STATE = IDLE;
+  LED_STATE();
+}
 
 void loop() {
-  motorL.update();
-  motorR.update();
-  poop.update();
-  if (millis() - oldt > 50) {
+  switch (STATE) {
+    case IDLE:
+      robot.update();
+      //BT1 Pressed
+      if (BTN_STATE(0)) {
+        robot.init(EDGE_A0, 0, PATH, PATH0_SIZE);
+        STATE = READY;
+        LED_STATE();
+      }
+      break;
+      
+    case READY:
+      robot.update();
+      if (BTN_STATE(1)) {
+        robot.start();
+        robot.setTargetVx(100);
+        STATE = RUNNING;
+        LED_STATE();
+      }
+      else if (BTN_STATE(0)) { //Re-init
+        robot.init(EDGE_A0, 0, PATH, PATH0_SIZE);
+        STATE = READY;
+        LED_STATE();
+      }
+      break;
 
-    buff = poop.getXYTheta();
-    Serial.print(buff(0)); Serial.print(" ");
-    Serial.print(buff(1)); Serial.print(" ");
-    Serial.print(buff(2)); Serial.print("\n");
+    case RUNNING:
+      robot.update();
+      robot.followPath();
+      if (BTN_STATE(1)) {
+        robot.stop();
+        robot.init(EDGE_A0, 0, PATH, PATH0_SIZE);
+        STATE = IDLE;
+        LED_STATE();
+      }
+      break;
+      
+    default:
+      STATE = IDLE;
+      LED_STATE(); 
+      break;    
   }
-  
 
 }
