@@ -28,8 +28,8 @@ DCMotor::DCMotor(uint8_t iEncoderP1, uint8_t iEncoderP2,
                 
 void DCMotor::init()
 {
-  pinMode(encoderP1, INPUT_PULLUP);
-  pinMode(encoderP2, INPUT_PULLUP);
+  pinMode(encoderP1, INPUT);
+  pinMode(encoderP2, INPUT);
   pinMode(motorP1, OUTPUT);
   pinMode(motorP2, OUTPUT);
 

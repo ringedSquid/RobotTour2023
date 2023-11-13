@@ -34,6 +34,7 @@ void Odometry::update() {
 
   //update the pos;
   if (currentus - oldus > intervalus) {
+    //Serial.printf("X: %f, Y: %f, Theta %f, Rl: %f, Rr: %f\n", pose(0), pose(1), theta, motorL->getTicks()/(3.0*100.37), motorR->getTicks()/(3.0*100.7));
     linVelx = (wheelRadius/2)*(currentMR+currentML);
     angVel = (wheelRadius/trackWidth)*(currentML-currentMR); //RPS
 

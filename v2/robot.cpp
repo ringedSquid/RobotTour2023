@@ -49,9 +49,11 @@ void Robot::update() {
   pose(0) = odo->getX();
   pose(1) = odo->getY();
   theta = odo->getTheta();
+  
 }
 
 void Robot::followPath() {
+  
   ppc->update(Vector3d(pose(0), pose(1), theta));
   motorL->setRPS(odo->computeLRPS(targetVx, ppc->getTargetAngVel()));
   motorR->setRPS(odo->computeRRPS(targetVx, ppc->getTargetAngVel()));

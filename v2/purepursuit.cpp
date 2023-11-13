@@ -75,9 +75,8 @@ Vector2d PurePursuitController::getIntersect(Vector2d pose, Vector2d p1, Vector2
 
   bool i1Valid;
   bool i2Valid;
-
   //Check if a point exists;
-  if (disc < 0) {
+  if (disc >= 0) {
     //Intersect 1
     i1(0) = (D * dy + sgn(dy) * dx * sqrt(disc))/pow(dr, 2);
     i1(1) = (-D * dx + abs(dy) * sqrt(disc))/pow(dr, 2);
@@ -111,9 +110,15 @@ Vector2d PurePursuitController::getGoalPoint(Vector2d pose) {
   Vector2d goalPoint = path[lastFoundIndex];
   
   //loop through points until a valid intersection is found;
-  for (int i=lastFoundIndex; i<PATH_RES-1; i++) {
-    Vector2d buffPoint = getIntersect(pose, path[i], path[i+1]);
+  for (int i=lastFoundIndex; i<1; i++) {
+    /*
+    if ((path[i+1](0) == INVALID_P) && (path[i+1](1) == INVALID_P)) {
+      break;
+    }
+    */
     
+    
+    Vector2d buffPoint = getIntersect(pose, path[i], path[i+1]); 
     //If we have an intersection
     if (!((buffPoint(0) == INVALID_P) && (buffPoint(1) == INVALID_P))) {
       
@@ -133,6 +138,7 @@ Vector2d PurePursuitController::getGoalPoint(Vector2d pose) {
 
 void PurePursuitController::computeAngVel(Vector3d XYTheta) {
   Vector2d goalPoint = getGoalPoint(Vector2d(XYTheta(0), XYTheta(1)));
+  Serial.printf("X: %f Y: %f\n", goalPoint(0), goalPoint(1)); 
   double targetTheta = atan2(XYTheta(1) - goalPoint(1), XYTheta(0) - goalPoint(0));;
 
   //If output is negative

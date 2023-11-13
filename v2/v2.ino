@@ -61,8 +61,7 @@ void motorInterruptHandlerR() {
 
 //Globals
 uint8_t STATE;
-Vector2d PATH[] = {PATH0};
-
+Vector2d PATH[] = PATH0;
 
 //Button handling code
 uint8_t BTN_PINS[] = {BT1, BT2};
@@ -145,7 +144,7 @@ void loop() {
       robot.update();
       if (BTN_STATE(1)) {
         robot.start();
-        robot.setTargetVx(100);
+        robot.setTargetVx(200);
         STATE = RUNNING;
         LED_STATE();
       }
