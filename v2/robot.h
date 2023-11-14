@@ -21,6 +21,14 @@ class Robot {
 
     //Speed targets
     double targetVx;
+
+    //bools
+    bool nearTarget;
+    void isNearTarget();
+        
+    Vector2d endPoint;
+
+    double minEndDist;
     
   public:
     Robot(DCMotor *iMotorL, DCMotor *iMotorR,
@@ -28,12 +36,14 @@ class Robot {
           PurePursuitController *ippc);
 
     void init();
-    void init(Vector2d iPose, double iTheta, Vector2d path[], uint8_t path_size);
+    void init(Vector2d iPose, double iTheta, Vector2d path[], uint8_t path_size, double iMinEndDist);
     void start();
     void stop();
     void update();
     void followPath();
     void setTargetVx(double newVx);
+
+    bool getNearTarget();
     
     double getTargetVx();
     

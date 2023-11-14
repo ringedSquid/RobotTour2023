@@ -20,9 +20,10 @@ void Robot::init() {
   motorL->init();
   motorR->init();
   ppc->init();
+  endPoint = Vector2d(INVALID_P, INVALID_P);
 }
 
-void Robot::init(Vector2d iPose, double iTheta, Vector2d path[], uint8_t path_size) {
+void Robot::init(Vector2d iPose, double iTheta, Vector2d path[], uint8_t path_size, double iMinEndDist) {
   pose = iPose;
   theta = iTheta;
   motorL->init();
@@ -30,6 +31,8 @@ void Robot::init(Vector2d iPose, double iTheta, Vector2d path[], uint8_t path_si
   odo->init(iPose, iTheta);
   ppc->init();
   ppc->loadPath(path, path_size);
+  endPoint = path[path_size-1];
+  minEndDist = iMinEndDist;
 }
 
 void Robot::start() {
@@ -53,7 +56,7 @@ void Robot::update() {
 }
 
 void Robot::followPath() {
-  
+  isNearTarget();
   ppc->update(Vector3d(pose(0), pose(1), theta));
   motorL->setRPS(odo->computeLRPS(targetVx, ppc->getTargetAngVel()));
   motorR->setRPS(odo->computeRRPS(targetVx, ppc->getTargetAngVel()));
@@ -65,4 +68,17 @@ void Robot::setTargetVx(double newVx) {
 
 double Robot::getTargetVx() {
   return targetVx;
+}
+
+void Robot::isNearTarget() {
+  if (ppc->getDist(pose, endPoint) <= minEndDist) {
+    nearTarget = true;
+  }
+  else {
+    nearTarget = false;
+  }
+}
+
+bool Robot::getNearTarget() {
+  return nearTarget;
 }

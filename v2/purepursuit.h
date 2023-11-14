@@ -22,7 +22,6 @@ class PurePursuitController {
 
     int sgn(double num);
     double findMinTheta(double targetTheta, double currTheta);  
-    double getDist(Vector2d p1, Vector2d p2);
       
     bool pointValid(Vector2d p, Vector2d p1, Vector2d p2);
     Vector2d getIntersect(Vector2d pose, Vector2d p1, Vector2d p2);
@@ -45,7 +44,8 @@ class PurePursuitController {
     void loadPath(Vector2d newPath[], uint8_t pathSize);
     void update(Vector3d XYTheta);
     void computeAngVel(Vector3d XYTheta);
-    
+
+    double getDist(Vector2d p1, Vector2d p2);
     double getTargetAngVel();
 };
 

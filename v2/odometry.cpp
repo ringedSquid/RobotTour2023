@@ -36,7 +36,7 @@ void Odometry::update() {
   if (currentus - oldus > intervalus) {
     //Serial.printf("X: %f, Y: %f, Theta %f, Rl: %f, Rr: %f\n", pose(0), pose(1), theta, motorL->getTicks()/(3.0*100.37), motorR->getTicks()/(3.0*100.7));
     linVelx = (wheelRadius/2)*(currentMR+currentML);
-    angVel = (wheelRadius/trackWidth)*(currentML-currentMR); //RPS
+    angVel = (wheelRadius/trackWidth)*(currentMR-currentML); //RPS
 
     theta += angVel * ((currentus-oldus) / pow(10, 6));
     pose(0) += linVelx * cos(theta) * ((currentus-oldus) / pow(10, 6));
@@ -106,8 +106,8 @@ Vector3d Odometry::getXYTheta() {
 
 //inverse kinematics
 double Odometry::computeRRPS(double targetLinVelx, double targetAngVel) {
-  return (targetLinVelx/wheelRadius)+(trackWidth/2)*(targetAngVel/wheelRadius);
+  return (targetLinVelx/wheelRadius)-(trackWidth/2)*(targetAngVel/wheelRadius);
 }
 double Odometry::computeLRPS(double targetLinVelx, double targetAngVel) {
-  return (targetLinVelx/wheelRadius)-(trackWidth/2)*(targetAngVel/wheelRadius);
+  return (targetLinVelx/wheelRadius)+(trackWidth/2)*(targetAngVel/wheelRadius);
 }

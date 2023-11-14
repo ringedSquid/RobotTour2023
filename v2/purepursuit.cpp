@@ -110,18 +110,14 @@ Vector2d PurePursuitController::getGoalPoint(Vector2d pose) {
   Vector2d goalPoint = path[lastFoundIndex];
   
   //loop through points until a valid intersection is found;
-  for (int i=lastFoundIndex; i<1; i++) {
-    /*
+  for (int i=lastFoundIndex; i<PATH_RES-1; i++) {
     if ((path[i+1](0) == INVALID_P) && (path[i+1](1) == INVALID_P)) {
       break;
     }
-    */
-    
     
     Vector2d buffPoint = getIntersect(pose, path[i], path[i+1]); 
     //If we have an intersection
-    if (!((buffPoint(0) == INVALID_P) && (buffPoint(1) == INVALID_P))) {
-      
+    if ((buffPoint(0) != INVALID_P) && (buffPoint(1) != INVALID_P)) {
       //Check if the distance from the intersection and the next point
       //Is less than the dist from the current pose and the next point
       if (getDist(buffPoint, path[i+1]) < getDist(pose, path[i+1])) {
@@ -138,7 +134,9 @@ Vector2d PurePursuitController::getGoalPoint(Vector2d pose) {
 
 void PurePursuitController::computeAngVel(Vector3d XYTheta) {
   Vector2d goalPoint = getGoalPoint(Vector2d(XYTheta(0), XYTheta(1)));
-  Serial.printf("X: %f Y: %f\n", goalPoint(0), goalPoint(1)); 
+  Serial.printf("GOAL X: %f Y: %f", goalPoint(0), goalPoint(1)); 
+  Serial.printf(" POSE X: %f Y: %f T: %f\n", XYTheta(0), XYTheta(1), XYTheta(2)); 
+  
   double targetTheta = atan2(XYTheta(1) - goalPoint(1), XYTheta(0) - goalPoint(0));;
 
   //If output is negative

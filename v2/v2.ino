@@ -134,7 +134,7 @@ void loop() {
       robot.update();
       //BT1 Pressed
       if (BTN_STATE(0)) {
-        robot.init(EDGE_A0, 0, PATH, PATH0_SIZE);
+        robot.init(ROBOT_INIT);
         STATE = READY;
         LED_STATE();
       }
@@ -144,12 +144,12 @@ void loop() {
       robot.update();
       if (BTN_STATE(1)) {
         robot.start();
-        robot.setTargetVx(200);
+        robot.setTargetVx(150);
         STATE = RUNNING;
         LED_STATE();
       }
       else if (BTN_STATE(0)) { //Re-init
-        robot.init(EDGE_A0, 0, PATH, PATH0_SIZE);
+        robot.init(ROBOT_INIT);
         STATE = READY;
         LED_STATE();
       }
@@ -158,9 +158,9 @@ void loop() {
     case RUNNING:
       robot.update();
       robot.followPath();
-      if (BTN_STATE(1)) {
+      if (BTN_STATE(1) || robot.getNearTarget()) {
         robot.stop();
-        robot.init(EDGE_A0, 0, PATH, PATH0_SIZE);
+        robot.init(ROBOT_INIT);
         STATE = IDLE;
         LED_STATE();
       }
@@ -171,5 +171,6 @@ void loop() {
       LED_STATE(); 
       break;    
   }
+  
 
 }
