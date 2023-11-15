@@ -21,10 +21,26 @@ void PurePursuitController::init() {
 }
 
 void PurePursuitController::loadPath(Vector2d newPath[], uint8_t pathSize) {
-  for (int i=0; i<pathSize; i++) {
-    path[i](0) = newPath[i][0];
-    path[i](1) = newPath[i][1];
+  //Make points between points
+  
+  path[(pathSize-1)*STEP_RES] = newPath[pathSize-1];
+  
+  for (int i=0; i<pathSize-1; i++) {
+    Vector2d stepSize((newPath[i+1](0)-newPath[i](0))/STEP_RES, (newPath[i+1](1)-newPath[i](1))/STEP_RES);
+  
+    for (int j=0; j<STEP_RES; j++) {
+      path[i*STEP_RES + j](0) = newPath[i](0) + stepSize(0)*j;
+      path[i*STEP_RES + j](1) = newPath[i](1) + stepSize(1)*j;
+      Serial.printf("PATHTEST: X: %f Y: %f\n", path[i*STEP_RES + j](0), path[i*STEP_RES + j](1));
+    }
   }
+
+  /*
+  //Curve Points
+  for (int i=0; i<(pathSize-1)*STEP_RES-CURVE_LOOKAHEAD; i++) {
+    //Serial.printf("curveTEST: X: %f Y: %f, %d\n", path[i](0), path[i](1), i);  
+  }
+  */
 }
 
 void PurePursuitController::update(Vector3d XYTheta) {
@@ -134,8 +150,8 @@ Vector2d PurePursuitController::getGoalPoint(Vector2d pose) {
 
 void PurePursuitController::computeAngVel(Vector3d XYTheta) {
   Vector2d goalPoint = getGoalPoint(Vector2d(XYTheta(0), XYTheta(1)));
-  Serial.printf("GOAL X: %f Y: %f", goalPoint(0), goalPoint(1)); 
-  Serial.printf(" POSE X: %f Y: %f T: %f\n", XYTheta(0), XYTheta(1), XYTheta(2)); 
+  //Serial.printf("GOAL X: %f Y: %f", goalPoint(0), goalPoint(1)); 
+  //Serial.printf(" POSE X: %f Y: %f T: %f\n", XYTheta(0), XYTheta(1), XYTheta(2)); 
   
   double targetTheta = atan2(XYTheta(1) - goalPoint(1), XYTheta(0) - goalPoint(0));;
 
@@ -147,7 +163,8 @@ void PurePursuitController::computeAngVel(Vector3d XYTheta) {
     deltaTheta = -1 * sgn(deltaTheta) * (TWO_PI - abs(deltaTheta));
   }
   deltaTheta = deltaTheta * kp;
-  targetAngVel = (deltaTheta > maxAngVel) ? maxAngVel : deltaTheta;
+  targetAngVel = (abs(deltaTheta) > maxAngVel) ? maxAngVel : deltaTheta;
+  Serial.println(targetAngVel);
 }
 
 double PurePursuitController::getTargetAngVel() {

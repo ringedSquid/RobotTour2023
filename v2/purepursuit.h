@@ -6,7 +6,9 @@
 #ifndef purepursuit_h
 #define purepursuit_h
 
-#define PATH_RES 100
+#define PATH_RES 250
+#define STEP_RES 10
+
 #define INVALID_P -2023.0
 
 #include <ArduinoEigenDense.h>

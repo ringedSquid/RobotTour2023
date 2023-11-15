@@ -4,6 +4,7 @@
 #include "DCMotor.h"
 #include "odometry.h"
 #include "purepursuit.h"
+#include <Filters.h>
 
 #include <ArduinoEigenDense.h>
 using namespace Eigen;
@@ -29,6 +30,8 @@ class Robot {
     Vector2d endPoint;
 
     double minEndDist;
+
+    FilterOnePole *angVelFilter;
     
   public:
     Robot(DCMotor *iMotorL, DCMotor *iMotorR,

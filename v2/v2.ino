@@ -144,7 +144,7 @@ void loop() {
       robot.update();
       if (BTN_STATE(1)) {
         robot.start();
-        robot.setTargetVx(150);
+        robot.setTargetVx(100*PURE_PURSUIT_KP);
         STATE = RUNNING;
         LED_STATE();
       }

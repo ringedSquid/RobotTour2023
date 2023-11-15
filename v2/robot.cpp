@@ -33,6 +33,7 @@ void Robot::init(Vector2d iPose, double iTheta, Vector2d path[], uint8_t path_si
   ppc->loadPath(path, path_size);
   endPoint = path[path_size-1];
   minEndDist = iMinEndDist;
+  angVelFilter = new FilterOnePole(LOWPASS, 1);
 }
 
 void Robot::start() {
@@ -58,8 +59,9 @@ void Robot::update() {
 void Robot::followPath() {
   isNearTarget();
   ppc->update(Vector3d(pose(0), pose(1), theta));
-  motorL->setRPS(odo->computeLRPS(targetVx, ppc->getTargetAngVel()));
-  motorR->setRPS(odo->computeRRPS(targetVx, ppc->getTargetAngVel()));
+  angVelFilter->input(ppc->getTargetAngVel());
+  motorL->setRPS(odo->computeLRPS(targetVx, angVelFilter->output()));
+  motorR->setRPS(odo->computeRRPS(targetVx, angVelFilter->output()));
 }
 
 void Robot::setTargetVx(double newVx) {
