@@ -2,6 +2,7 @@
 #include "DCMotor.h"
 #include "odometry.h"
 #include "purepursuit.h"
+#include "CONFIG.h"
 
 #include <ArduinoEigenDense.h>
 using namespace Eigen;
@@ -33,7 +34,7 @@ void Robot::init(Vector2d iPose, double iTheta, Vector2d path[], uint8_t path_si
   ppc->loadPath(path, path_size);
   endPoint = path[path_size-1];
   minEndDist = iMinEndDist;
-  angVelFilter = new FilterOnePole(LOWPASS, 1);
+  angVelFilter = new FilterOnePole(LOWPASS, ANG_VEL_FILTER_FREQ);
 }
 
 void Robot::start() {

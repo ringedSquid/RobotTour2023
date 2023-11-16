@@ -5,6 +5,7 @@
 #include "odometry.h"
 #include "purepursuit.h"
 #include <Filters.h>
+#include "CONFIG.h"
 
 #include <ArduinoEigenDense.h>
 using namespace Eigen;
