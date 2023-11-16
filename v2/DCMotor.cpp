@@ -97,8 +97,17 @@ void DCMotor::update() {
 }
 
 
-void DCMotor::tickEncoder() {
-  if (digitalRead(encoderP1) == HIGH) {
+void DCMotor::tickEncoderA() {
+  if (digitalRead(encoderP1) != digitalRead(encoderP2)) {
+    ticks++;
+  }
+  else {
+    ticks--;
+  }
+}
+
+void DCMotor::tickEncoderB() {
+  if (digitalRead(encoderP2) == digitalRead(encoderP1)) {
     ticks++;
   }
   else {

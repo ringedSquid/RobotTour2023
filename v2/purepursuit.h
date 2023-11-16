@@ -46,6 +46,8 @@ class PurePursuitController {
 
     double getDist(Vector2d p1, Vector2d p2);
     double getTargetAngVel();
+
+    void setKp(double newKp);
 };
 
 

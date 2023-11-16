@@ -53,7 +53,8 @@ class DCMotor {
     void enable();
     void disable();
     void update();
-    void tickEncoder();
+    void tickEncoderA();
+    void tickEncoderB();
     void computeTPus();
     
     double getTPus();

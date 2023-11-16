@@ -21,21 +21,21 @@
 #define RADIUS_WHEEL 16
 
 //MOTOR TUNING VALUES
-#define MOTOR_R_KP 3.3*pow(10, 7)
-#define MOTOR_R_KI 0.95*pow(10, 7)
+#define MOTOR_R_KP 0.335*pow(10, 7)
+#define MOTOR_R_KI 0.15*pow(10, 7)
 #define MOTOR_R_KD 0.01*pow(10, 7)
 
-#define MOTOR_L_KP 3.3*pow(10, 7)
-#define MOTOR_L_KI 0.95*pow(10, 7)
+#define MOTOR_L_KP 0.335*pow(10, 7)
+#define MOTOR_L_KI 0.17*pow(10, 7)
 #define MOTOR_L_KD 0.01*pow(10, 7)
 
 #define MOTOR_INTERVAL_US (uint32_t)10*pow(10, 3)
-#define TICKS_PER_REV 652
+#define TICKS_PER_REV 1200
 
 //ODOMETRY TUNING VALUES
 #define ODOMETRY_INTERVAL_US (uint32_t)20*pow(10, 3)
 #define STARTING_POSE Vector3d(0, 0, 0)
-#define STARTING_THETA 0
+//#define STARTING_THETA 0
 
 //PATH GENERATION PARAMETERS
 #define PATH_RES 250
@@ -45,14 +45,14 @@
 
 //PURE PURSUIT TUNING VALUES
 //in mm
-#define PURE_PURSUIT_LOOKAHEAD 50
-#define PURE_PURSUIT_KP 0.5
+#define PURE_PURSUIT_LOOKAHEAD 40
+#define PURE_PURSUIT_KP_K 0.0075
 #define PURE_PURSUIT_MAX_AV 5
 #define PURE_PURSUIT_INTERVAL_US (uint32_t)10*pow(10, 3)
 
-#define MIN_END_DIST 30
+#define MIN_END_DIST 20
 
-#define ANG_VEL_FILTER_FREQ 1
+#define ANG_VEL_FILTER_FREQ 0.65
 
 //IMU TUNING VALUES
 #define IMU_POLL_INTERVAL_US 0

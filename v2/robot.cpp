@@ -74,6 +74,7 @@ double Robot::getTargetVx() {
 }
 
 void Robot::isNearTarget() {
+  Vector2d stickPose(pose(0)+(80*cos(theta)), pose(1)+(80*sin(theta)));
   if (ppc->getDist(pose, endPoint) <= minEndDist) {
     nearTarget = true;
   }

@@ -164,9 +164,13 @@ void PurePursuitController::computeAngVel(Vector3d XYTheta) {
   }
   deltaTheta = deltaTheta * kp;
   targetAngVel = (abs(deltaTheta) > maxAngVel) ? maxAngVel : deltaTheta;
-  Serial.println(targetAngVel);
+  //Serial.println(targetAngVel);
 }
 
 double PurePursuitController::getTargetAngVel() {
   return targetAngVel;
+}
+
+void PurePursuitController::setKp(double newKp) {
+  kp = newKp;
 }

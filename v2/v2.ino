@@ -38,7 +38,7 @@ Odometry odo
 PurePursuitController ppc
 (
   PURE_PURSUIT_LOOKAHEAD,
-  PURE_PURSUIT_KP,
+  PURE_PURSUIT_KP_K,
   PURE_PURSUIT_MAX_AV,
   PURE_PURSUIT_INTERVAL_US
 );
@@ -51,16 +51,25 @@ Robot robot
 );
 
 //Interrupts
-void motorInterruptHandlerL() {
-  motorL.tickEncoder();
+void motorInterruptHandlerLA() {
+  motorL.tickEncoderA();
 }
 
-void motorInterruptHandlerR() {
-  motorR.tickEncoder();
+void motorInterruptHandlerLB() {
+  motorL.tickEncoderB();
+}
+
+void motorInterruptHandlerRA() {
+  motorR.tickEncoderA();
+}
+
+void motorInterruptHandlerRB() {
+  motorR.tickEncoderB();
 }
 
 //Globals
 uint8_t STATE;
+double ROBOTSPEED = 0;
 Vector2d PATH[] = PATH0;
 
 //Button handling code
@@ -118,14 +127,30 @@ void setup() {
   LED_STATE();
 
   //Attach interrupts
-  attachInterrupt(digitalPinToInterrupt(ENCODER_R_1), motorInterruptHandlerR, RISING);
-  attachInterrupt(digitalPinToInterrupt(ENCODER_L_2), motorInterruptHandlerL, RISING);
+  attachInterrupt(digitalPinToInterrupt(ENCODER_R_1), motorInterruptHandlerRA, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ENCODER_R_2), motorInterruptHandlerRB, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ENCODER_L_1), motorInterruptHandlerLB, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(ENCODER_L_2), motorInterruptHandlerLA, CHANGE);
 
   //Init objects
   robot.init();
 
   STATE = IDLE;
   LED_STATE();
+
+  //Calculating speed
+
+  double trackDistance = 0;
+  
+  for (int i=0; i<PATH0_SIZE-1; i++) {
+    trackDistance += abs(PATH[i+1](0) - PATH[i](0));
+    trackDistance += abs(PATH[i+1](1) - PATH[i](1)); 
+  }
+
+  ROBOTSPEED = trackDistance/TARGET_TIME;
+  Serial.println(trackDistance);
+  Serial.println(ROBOTSPEED);
+
 }
 
 void loop() {
@@ -144,7 +169,8 @@ void loop() {
       robot.update();
       if (BTN_STATE(1)) {
         robot.start();
-        robot.setTargetVx(100*PURE_PURSUIT_KP);
+        robot.setTargetVx(ROBOTSPEED);
+        ppc.setKp(ROBOTSPEED*PURE_PURSUIT_KP_K);
         STATE = RUNNING;
         LED_STATE();
       }
@@ -170,7 +196,6 @@ void loop() {
       STATE = IDLE;
       LED_STATE(); 
       break;    
-  }
-  
+  }  
 
 }
