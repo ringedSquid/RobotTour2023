@@ -17,7 +17,7 @@ DCMotor motorL
   0, 1, 
   MOTOR_INTERVAL_US, TICKS_PER_REV, 
   MOTOR_L_KP, MOTOR_L_KI, MOTOR_L_KD,
-  MOTOR_L_MAX_VEL, MOTOR_L_MAX_ACC,
+  MOTOR_FILTER_FREQ,
   MOTOR_L_F
 );
                
@@ -28,7 +28,7 @@ DCMotor motorR
   2, 3, 
   MOTOR_INTERVAL_US, TICKS_PER_REV, 
   MOTOR_R_KP, MOTOR_R_KI, MOTOR_R_KD,
-  MOTOR_R_MAX_VEL, MOTOR_R_MAX_ACC,
+  MOTOR_FILTER_FREQ,
   MOTOR_R_F
 );
 
@@ -146,9 +146,9 @@ void setup() {
   STATE = TUNING;
   LED_STATE();
 
-  /*
-  //Calculating speed
   
+  //Calculating speed
+  /*
   double trackDistance = 0;
   
   for (int i=0; i<PATH0_SIZE-1; i++) {
@@ -162,11 +162,12 @@ void setup() {
   */
   motorL.init();
   motorL.enable();
-  
+  motorR.init();
+  motorR.enable();
 
 }
 
-long oldt = millis();
+long oldt = 0;
 
 void loop() {
   switch (STATE) {
@@ -196,7 +197,7 @@ void loop() {
         LED_STATE();
       }
       break;
-
+      
     case RUNNING:
       robot.update();
       robot.followPath();
@@ -207,21 +208,25 @@ void loop() {
         LED_STATE();
       }
       break;
-
+    
     case TUNING:
       motorL.update();
+      motorR.update();
       if (millis() - oldt > 50) {
-        Serial.printf("%f %f\n", motorL.getRPM(), motorL.getMotionProfRPM());
+        Serial.printf("%f 100\n", motorL.getRPM());
         oldt = millis();
       }
       if (BTN_STATE(1)) {
         motorL.setRPM(0);
+        motorR.setRPM(0);
       }
       if (BTN_STATE(0)) {
-        motorL.setRPM(100);
-      }
+        Serial.println("E");
+        motorL.setRPM(160);
+        motorR.setRPM(160);
+      }     
       break;
-      
+     
       
     default:
       STATE = IDLE;

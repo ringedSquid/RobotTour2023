@@ -3,8 +3,7 @@
 
 #include <Arduino.h>
 #include <PID_v1.h>
-
-#include "MotionGenerator.h"
+#include <Filters.h>
 
 class DCMotor {
   private:
@@ -29,9 +28,9 @@ class DCMotor {
 
     //Speed control/PID
     PID *tpusPID;
-    MotionGenerator *motionProf;
 
-    double motionProfTPus;
+    //Speed lowpass Filter
+    FilterOnePole *lowPassTPus;
     
     double currentTPus;
     double targetTPus;
@@ -40,15 +39,13 @@ class DCMotor {
     double Ki;
     double Kd;
 
+    double filterFreq;
+    
     double pidOut;
 
     double motorPWM;
     uint8_t PWMChannel1;
     uint8_t PWMChannel2;
-
-    //Motion profile
-    double maxVel;
-    double maxAcc;
 
     //Feedforward
     double F;
@@ -64,7 +61,7 @@ class DCMotor {
             uint8_t iPWMChannel1, uint8_t iPWMChannel2,
             uint32_t intervalus, double iTPR,
             double iKp, double iKi, double iKd,
-            double imaxVel, double imaxAcc,
+            double ifilterFreq,
             double iF);
 
     void init();
@@ -81,10 +78,6 @@ class DCMotor {
     double getTPus();
     double getRPS();
     double getRPM();
-
-    double getMotionProfTPus();
-    double getMotionProfRPS();
-    double getMotionProfRPM();
 
 
     long getTicks();

@@ -21,21 +21,19 @@
 #define RADIUS_WHEEL 16
 
 //MOTOR TUNING VALUES
-#define MOTOR_R_KP 0.335*pow(10, 7)
-#define MOTOR_R_KI 0.15*pow(10, 7)
-#define MOTOR_R_KD 0.01*pow(10, 7)
-#define MOTOR_R_MAX_VEL 10
-#define MOTOR_R_MAX_ACC 10
-#define MOTOR_R_F 10
+#define MOTOR_R_KP 0.0105*pow(10, 7)
+#define MOTOR_R_KI 0.01*pow(10, 1)
+#define MOTOR_R_KD 0.01*pow(10, 5)
+#define MOTOR_R_F 0.268*pow(10, 7)
 
-#define MOTOR_L_KP 0
-#define MOTOR_L_KI 0
-#define MOTOR_L_KD 0
-#define MOTOR_L_MAX_VEL 10
-#define MOTOR_L_MAX_ACC 10
-#define MOTOR_L_F 10
+#define MOTOR_L_KP 0.0105*pow(10, 7)
+#define MOTOR_L_KI 0.01*pow(10, 1)
+#define MOTOR_L_KD 0.01*pow(10, 5)
+#define MOTOR_L_F 0.268*pow(10, 7)
 
-#define MOTOR_INTERVAL_US (uint32_t)10*pow(10, 3)
+#define MOTOR_FILTER_FREQ 2.5
+
+#define MOTOR_INTERVAL_US (uint32_t)12*pow(10, 3)
 #define TICKS_PER_REV 1200
 
 //ODOMETRY TUNING VALUES
@@ -45,7 +43,7 @@
 
 //PATH GENERATION PARAMETERS
 #define PATH_RES 250
-#define STEP_RES 10
+#define STEP_RES 1
 
 #define INVALID_P -2023.0
 

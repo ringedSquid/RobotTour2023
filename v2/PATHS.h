@@ -31,7 +31,7 @@
 #define EDGE_0A Vector2d(0, 250)
 #define EDGE_1A Vector2d(0, 750)
 #define EDGE_2A Vector2d(0, 1250)
-#define EDGE_3A Vector2d(0, 1750)
+#define EDGE_3A Vector2d(1750, -80)
 
 #define EDGE_0D Vector2d(2000, 250)
 #define EDGE_1D Vector2d(2000, 750)

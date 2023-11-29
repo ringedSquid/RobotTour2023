@@ -1,13 +1,13 @@
 #include "DCMotor.h"
-#include "MotionGenerator.h"
 #include <PID_v1.h>
+#include <Filters.h>
 
 DCMotor::DCMotor(uint8_t iEncoderP1, uint8_t iEncoderP2, 
                 uint8_t  iMotorP1, uint8_t iMotorP2,
                 uint8_t iPWMChannel1, uint8_t iPWMChannel2,
                 uint32_t iintervalus, double iTPR,
                 double iKp, double iKi, double iKd,
-                double imaxVel, double imaxAcc,
+                double iFilterFreq,
                 double iF)
 {
   encoderP1 = iEncoderP1;
@@ -23,14 +23,12 @@ DCMotor::DCMotor(uint8_t iEncoderP1, uint8_t iEncoderP2,
   Kp = iKp;
   Ki = iKi;
   Kd = iKd;
-  maxVel = imaxVel;
-  maxAcc = imaxAcc;
   F = iF;
-  motionProf = new MotionGenerator(maxVel, maxAcc, 0);
+  filterFreq = iFilterFreq;
   tpusPID = new PID(&currentTPus, &pidOut, &targetTPus,
                     Kp, Ki, Kd,
                     DIRECT);
-                  
+  lowPassTPus = new FilterOnePole(LOWPASS, filterFreq);
 }
                 
 void DCMotor::init()
@@ -47,9 +45,7 @@ void DCMotor::init()
   motorPWM = 0;
 
   tpusPID->SetOutputLimits(-(int)(pow(2, 15)-1), (int)(pow(2, 15)-1));
-  motionProf->reset();
   
-  motionProfTPus = 0;
   targetTPus = 0;
   currentTPus = 0;
   ticks = 0;
@@ -62,7 +58,7 @@ void DCMotor::init()
 }
 
 void DCMotor::setTPus(double newTPus) {
-  motionProfTPus = newTPus;
+  targetTPus = newTPus;
 }
 
 void DCMotor::setRPS(double newRPS) {
@@ -83,14 +79,14 @@ void DCMotor::disable() {
   ledcWrite(PWMChannel1, 0);
   ledcWrite(PWMChannel2, 0);
   tpusPID->SetMode(MANUAL);
-  motionProf->reset();
 }
 
 void DCMotor::computeTPus() {
   double currentus = micros();
   long currentTicks = ticks;
   if (currentus - oldus > intervalus) {
-    currentTPus = (double)(ticks-oldTicks)/(currentus-oldus);
+    lowPassTPus->input((double)(ticks-oldTicks)/(currentus-oldus));
+    currentTPus = lowPassTPus->output();
     oldus = currentus;
     oldTicks = currentTicks;
   }
@@ -103,7 +99,6 @@ double DCMotor::getFeedForward() {
 void DCMotor::update() {
   computeTPus();
   if (isEnabled) {
-    targetTPus = motionProf->update(motionProfTPus);
     tpusPID->Compute();
     motorPWM = pidOut + getFeedForward();
     if (motorPWM < 0) {
@@ -148,17 +143,6 @@ double DCMotor::getRPM() {
   return getTPus()*toRPM;
 }
 
-double DCMotor::getMotionProfTPus() {
-  return targetTPus;
-}
-
-double DCMotor::getMotionProfRPS() {
-  return targetTPus*toRPS;
-}
-
-double DCMotor::getMotionProfRPM() {
-  return targetTPus*toRPM;
-}
 long DCMotor::getTicks() {
   return ticks;
 }
