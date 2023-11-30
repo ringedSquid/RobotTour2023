@@ -49,10 +49,6 @@ class Odometry {
     Vector2d getPose();
     Vector3d getXYTheta();
 
-    //inverse kinematics
-    double computeRRPS(double targetLinVelx, double targetAngVel);
-    double computeLRPS(double targetLinVelx, double targetAngVel);
-    
 };
 
 #endif

@@ -3,8 +3,6 @@
 
 #include "DCMotor.h"
 #include "odometry.h"
-#include "purepursuit.h"
-#include "robot.h"
 
 #include <ArduinoEigenDense.h>
 using namespace Eigen;
@@ -39,21 +37,6 @@ Odometry odo
   ODOMETRY_INTERVAL_US
 );
 
-PurePursuitController ppc
-(
-  PURE_PURSUIT_LOOKAHEAD,
-  PURE_PURSUIT_KP_K,
-  PURE_PURSUIT_MAX_AV,
-  PURE_PURSUIT_INTERVAL_US
-);
-
-Robot robot
-(
-  &motorL, &motorR,
-  &odo,
-  &ppc
-);
-
 //Interrupts
 void motorInterruptHandlerLA() {
   motorL.tickEncoderA();
@@ -74,7 +57,6 @@ void motorInterruptHandlerRB() {
 //Globals
 uint8_t STATE;
 double ROBOTSPEED = 0;
-Vector2d PATH[] = PATH0;
 
 //Button handling code
 uint8_t BTN_PINS[] = {BT1, BT2};
@@ -141,97 +123,12 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(ENCODER_L_2), motorInterruptHandlerLA, CHANGE);
 
   //Init objects
-  //robot.init();
 
   STATE = TUNING;
   LED_STATE();
 
-  
-  //Calculating speed
-  /*
-  double trackDistance = 0;
-  
-  for (int i=0; i<PATH0_SIZE-1; i++) {
-    trackDistance += abs(PATH[i+1](0) - PATH[i](0));
-    trackDistance += abs(PATH[i+1](1) - PATH[i](1)); 
-  }
-
-  ROBOTSPEED = trackDistance/TARGET_TIME;
-  Serial.println(trackDistance);
-  Serial.println(ROBOTSPEED);
-  */
-  motorL.init();
-  motorL.enable();
-  motorR.init();
-  motorR.enable();
-
 }
 
-long oldt = 0;
-
 void loop() {
-  switch (STATE) {
-
-    case IDLE:
-      robot.update();
-      //BT1 Pressed
-      if (BTN_STATE(0)) {
-        robot.init(ROBOT_INIT);
-        STATE = READY;
-        LED_STATE();
-      }
-      break;
-      
-    case READY:
-      robot.update();
-      if (BTN_STATE(1)) {
-        robot.start();
-        robot.setTargetVx(ROBOTSPEED);
-        ppc.setKp(ROBOTSPEED*PURE_PURSUIT_KP_K);
-        STATE = RUNNING;
-        LED_STATE();
-      }
-      else if (BTN_STATE(0)) { //Re-init
-        robot.init(ROBOT_INIT);
-        STATE = READY;
-        LED_STATE();
-      }
-      break;
-      
-    case RUNNING:
-      robot.update();
-      robot.followPath();
-      if (BTN_STATE(1) || robot.getNearTarget()) {
-        robot.stop();
-        robot.init(ROBOT_INIT);
-        STATE = IDLE;
-        LED_STATE();
-      }
-      break;
-    
-    case TUNING:
-      motorL.update();
-      motorR.update();
-      if (millis() - oldt > 50) {
-        Serial.printf("%f 100\n", motorL.getRPM());
-        oldt = millis();
-      }
-      if (BTN_STATE(1)) {
-        motorL.setRPM(0);
-        motorR.setRPM(0);
-      }
-      if (BTN_STATE(0)) {
-        Serial.println("E");
-        motorL.setRPM(160);
-        motorR.setRPM(160);
-      }     
-      break;
-     
-      
-    default:
-      STATE = IDLE;
-      LED_STATE(); 
-      break;    
-  }  
 
 }

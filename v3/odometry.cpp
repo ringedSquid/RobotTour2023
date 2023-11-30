@@ -103,11 +103,3 @@ Vector2d Odometry::getPose() {
 Vector3d Odometry::getXYTheta() {
   return Vector3d(pose(0), pose(1), theta);
 }
-
-//inverse kinematics
-double Odometry::computeRRPS(double targetLinVelx, double targetAngVel) {
-  return (targetLinVelx/wheelRadius)-(trackWidth/2)*(targetAngVel/wheelRadius);
-}
-double Odometry::computeLRPS(double targetLinVelx, double targetAngVel) {
-  return (targetLinVelx/wheelRadius)+(trackWidth/2)*(targetAngVel/wheelRadius);
-}
