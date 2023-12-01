@@ -3,6 +3,7 @@
 
 #include "DCMotor.h"
 #include "odometry.h"
+#include "controller.h"
 
 #include <ArduinoEigenDense.h>
 using namespace Eigen;
@@ -36,6 +37,17 @@ Odometry odo
   WIDTH_TRACK, RADIUS_WHEEL, 
   ODOMETRY_INTERVAL_US
 );
+
+Controller controller
+(
+  RADIUS_WHEEL, WIDTH_TRACK,
+  &motorL, &motorR,
+  MAX_ANG_VEL,
+  &odo,
+  CONTROLLER_INTERVAL_US,
+  POSE_KP, POSE_KI, POSE_KD
+);
+
 
 //Interrupts
 void motorInterruptHandlerLA() {
@@ -127,8 +139,19 @@ void setup() {
   STATE = TUNING;
   LED_STATE();
 
+  odo.init(Vector2d(0, 0), 0);
+  controller.init();
+  controller.enable();
+
 }
 
 void loop() {
-
+  if (BTN_STATE(0)) {
+    controller.setTargetTheta(PI/2);
+  }
+  if (BTN_STATE(1)) {
+    controller.setTargetTheta(0);
+  }
+  controller.update();
+  
 }

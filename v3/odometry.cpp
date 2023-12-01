@@ -46,8 +46,8 @@ void Odometry::update() {
     oldAngVel = angVel;
     oldus = currentus;
 
-    //Keep theta within [0, 2pi]
-    if (theta > TWO_PI) {
+    //Keep theta within [-pi, 2pi]
+    if (theta > PI) {
       theta -= TWO_PI;
     }
 

@@ -2,6 +2,7 @@
 #define controller_h
 
 #include "DCMotor.h"
+#include "odometry.h"
 
 #include <PID_v1.h>
 #include <ArduinoEigenDense.h>
@@ -18,17 +19,19 @@ class Controller {
 
     //PID out
     double targetAngVel;
-
     double maxAngVel;
     
     double thetaKp;
     double thetaKi;
     double thetaKd;
 
+    double thetaF;
+
     uint32_t intervalus;
     uint32_t oldus;
+
+    double oldError;
     
-    PID *thetaPID;
     Odometry *odometry;
 
     DCMotor *motorL;
@@ -46,7 +49,8 @@ class Controller {
       double iMaxAngeVel,
       Odometry *iOdometry,
       uint32_t iIntervalus,
-      double iThetaKp, double iThetaKi, double iThetaKd
+      double iThetaKp, double iThetaKi, double iThetaKd,
+      double iThetaF
     );
 
     void init();
@@ -54,7 +58,9 @@ class Controller {
     void enable();
     void disable();
      
-    double setTargetTheta(double newTheta);
+    void setTargetTheta(double newTheta);
 
-}
+};
+
+#endif
    
