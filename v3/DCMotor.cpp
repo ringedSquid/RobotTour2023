@@ -44,7 +44,7 @@ void DCMotor::init()
   ledcAttachPin(motorP2, PWMChannel2);
   motorPWM = 0;
 
-  tpusPID->SetOutputLimits(-(int)(pow(2, 15)-1), (int)(pow(2, 15)-1));
+  tpusPID->SetOutputLimits(-(int)(pow(2, 13)-1), (int)(pow(2, 13)-1));
   
   targetTPus = 0;
   currentTPus = 0;
@@ -93,7 +93,7 @@ void DCMotor::computeTPus() {
 }
 
 double DCMotor::getFeedForward() {
-  return targetTPus * F;
+  return (targetTPus-getTPus()) * F;
 }
 
 void DCMotor::update() {

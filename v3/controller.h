@@ -17,7 +17,11 @@ class Controller {
     double targetTheta;
     double targetVx;
 
+    double currentTheta;
+
     //PID out
+    PID *thetaPID;
+    
     double targetAngVel;
     double maxAngVel;
     
@@ -57,7 +61,8 @@ class Controller {
     void update();
     void enable();
     void disable();
-     
+
+    void setTargetVx(double newVx);
     void setTargetTheta(double newTheta);
 
 };

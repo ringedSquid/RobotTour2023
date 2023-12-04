@@ -45,7 +45,8 @@ Controller controller
   MAX_ANG_VEL,
   &odo,
   CONTROLLER_INTERVAL_US,
-  POSE_KP, POSE_KI, POSE_KD
+  POSE_KP, POSE_KI, POSE_KD,
+  0
 );
 
 
@@ -141,16 +142,23 @@ void setup() {
 
   odo.init(Vector2d(0, 0), 0);
   controller.init();
+  controller.setTargetTheta(0);
   controller.enable();
 
 }
-
+double oldt = millis();
+double thet = 0;
 void loop() {
+  if (millis() - oldt > 50) {
+    controller.setTargetTheta(thet);
+    Serial.printf("%f, %f\n", odo.getTheta(), thet);
+  }
   if (BTN_STATE(0)) {
-    controller.setTargetTheta(PI/2);
+    thet += PI/2;
+    
   }
   if (BTN_STATE(1)) {
-    controller.setTargetTheta(0);
+    thet -= PI/2;
   }
   controller.update();
   

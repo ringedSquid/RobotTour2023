@@ -10,7 +10,7 @@ Controller::Controller(
     double iMaxAngVel,
     Odometry *iOdometry,
     uint32_t iIntervalus,
-    double iThetaKp, double iThetaKi, double iThetaKd
+    double iThetaKp, double iThetaKi, double iThetaKd,
     double iThetaF
     ) 
 {
@@ -23,24 +23,25 @@ Controller::Controller(
   thetaKp = iThetaKp;
   thetaKi = iThetaKi;
   thetaKd = iThetaKd;
-  thetaF = iThetaF
+  thetaF = iThetaF;
+  thetaPID = new PID(&currentTheta, &targetAngVel, &targetTheta,
+                    thetaKp, thetaKi, thetaKd,
+                    DIRECT);
   maxAngVel = iMaxAngVel;
 
 }
       
 void Controller::init() {
   
+  thetaPID->SetOutputLimits(-maxAngVel, maxAngVel);
+  
   motorL->init();
   motorR->init();
-
-  currentTheta = odometry->getTheta();
   
   targetVx = 0;
   targetAngVel = 0;
   targetTheta = 0;
 
-  thetaPID->SetOutputLimits(-maxAngVel, maxAngVel);
-  
   oldus = micros();
   
   disable();
@@ -51,12 +52,11 @@ void Controller::update() {
   motorL->update();
   motorR->update();
   odometry->update();
+  currentTheta = odometry->getTheta();
   thetaPID->Compute();
-  currentTheta = odometry->getTheta(); 
   if (enabled) {
     motorL->setRPS(computeLRPS());
     motorR->setRPS(computeRRPS());
-    Serial.printf("Current t %f, Target T %f, target omega %f\n", currentTheta, targetTheta, targetAngVel);
   } 
 }
   
@@ -72,11 +72,14 @@ void Controller::disable() {
   motorR->disable();
   thetaPID->SetMode(MANUAL);
   enabled = false;
-  
 }
 
 void Controller::setTargetTheta(double newTheta) {
   targetTheta = newTheta;
+}
+
+void Controller::setTargetVx(double newVx) {
+  targetVx = newVx;
 }
 
 double Controller::computeRRPS() {
