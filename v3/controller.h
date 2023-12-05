@@ -14,7 +14,8 @@ class Controller {
     double wheelRadius;
     double trackWidth;
     
-    double targetTheta;
+    double absTargetTheta;
+    double relTargetTheta;
     double targetVx;
 
     double currentTheta;

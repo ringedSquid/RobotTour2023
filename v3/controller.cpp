@@ -24,7 +24,7 @@ Controller::Controller(
   thetaKi = iThetaKi;
   thetaKd = iThetaKd;
   thetaF = iThetaF;
-  thetaPID = new PID(&currentTheta, &targetAngVel, &targetTheta,
+  thetaPID = new PID(&currentTheta, &targetAngVel, &relTargetTheta,
                     thetaKp, thetaKi, thetaKd,
                     DIRECT);
   maxAngVel = iMaxAngVel;
@@ -40,7 +40,8 @@ void Controller::init() {
   
   targetVx = 0;
   targetAngVel = 0;
-  targetTheta = 0;
+  relTargetTheta = 0;
+  absTargetTheta = 0;
 
   oldus = micros();
   
@@ -53,6 +54,20 @@ void Controller::update() {
   motorR->update();
   odometry->update();
   currentTheta = odometry->getTheta();
+  
+  //most optimal turn
+  if (abs(currentTheta - absTargetTheta) > PI) {
+  if ((currentTheta < 0) && (absTargetTheta > 0)) {
+      relTargetTheta = absTargetTheta - TWO_PI;
+  }
+  else if ((currentTheta > 0) && (absTargetTheta < 0)) {
+    relTargetTheta = absTargetTheta + TWO_PI;
+  }
+  }
+  else {
+    relTargetTheta = absTargetTheta;
+  }
+  
   thetaPID->Compute();
   if (enabled) {
     motorL->setRPS(computeLRPS());
@@ -75,7 +90,16 @@ void Controller::disable() {
 }
 
 void Controller::setTargetTheta(double newTheta) {
-  targetTheta = newTheta;
+  if (newTheta > PI) {
+      absTargetTheta = newTheta - TWO_PI;
+    }
+
+    else if (newTheta < -PI) {
+      absTargetTheta = TWO_PI + newTheta;
+    }
+    else {
+      absTargetTheta = newTheta;
+    }
 }
 
 void Controller::setTargetVx(double newVx) {

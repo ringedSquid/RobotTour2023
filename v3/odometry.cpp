@@ -48,11 +48,11 @@ void Odometry::update() {
 
     //Keep theta within [-pi, 2pi]
     if (theta > PI) {
-      theta -= TWO_PI;
+      theta = theta - TWO_PI;
     }
 
-    else if (theta < 0) {
-      theta += TWO_PI;
+    else if (theta < -PI) {
+      theta = TWO_PI + theta;
     }
   }
 }
