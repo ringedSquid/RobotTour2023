@@ -21,12 +21,12 @@
 #define RADIUS_WHEEL 16
 
 //MOTOR TUNING VALUES
-#define MOTOR_R_KP 0.39*pow(10, 7)
+#define MOTOR_R_KP 0.4*pow(10, 7)
 #define MOTOR_R_KI 0.6*pow(10, 7)
 #define MOTOR_R_KD 0*pow(10, 2)
 #define MOTOR_R_F 0*pow(10, 7)
 
-#define MOTOR_L_KP 0.39*pow(10, 7)
+#define MOTOR_L_KP 0.4*pow(10, 7)
 #define MOTOR_L_KI 0.6*pow(10, 7)
 #define MOTOR_L_KD 0*pow(10, 2)
 #define MOTOR_L_F 0*pow(10, 7)
@@ -45,8 +45,8 @@
 #define MAX_ANG_VEL 5 //Rad/s
 #define CONTROLLER_INTERVAL_US 0
 
-#define POSE_KP 2.45
-#define POSE_KI 0
+#define POSE_KP 4.22
+#define POSE_KI 0.8
 #define POSE_KD 0
 #define POSE_F  0
 //IMU TUNING VALUES

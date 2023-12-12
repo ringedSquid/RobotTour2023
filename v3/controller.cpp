@@ -1,6 +1,6 @@
 #include "controller.h"
 
-#include <PID_v1.h>
+#include "PID_Ballsack.h"
 #include <ArduinoEigenDense.h>
 using namespace Eigen;
 
@@ -24,16 +24,17 @@ Controller::Controller(
   thetaKi = iThetaKi;
   thetaKd = iThetaKd;
   thetaF = iThetaF;
-  thetaPID = new PID(&currentTheta, &targetAngVel, &relTargetTheta,
-                    thetaKp, thetaKi, thetaKd,
-                    DIRECT);
   maxAngVel = iMaxAngVel;
+  
+  thetaPID = new PID_Ballsack(
+    &currentTheta, &targetAngVel, &relTargetTheta,
+    thetaKp, thetaKi, thetaKd,
+    DIRECT
+    );
 
 }
       
 void Controller::init() {
-  
-  thetaPID->SetOutputLimits(-maxAngVel, maxAngVel);
   
   motorL->init();
   motorR->init();
@@ -43,6 +44,7 @@ void Controller::init() {
   relTargetTheta = 0;
   absTargetTheta = 0;
 
+  thetaPID->SetOutputLimits(-maxAngVel, maxAngVel);
   oldus = micros();
   
   disable();
@@ -68,8 +70,8 @@ void Controller::update() {
     relTargetTheta = absTargetTheta;
   }
   
-  thetaPID->Compute();
   if (enabled) {
+    thetaPID->Compute();
     motorL->setRPS(computeLRPS());
     motorR->setRPS(computeRRPS());
   } 
@@ -91,15 +93,16 @@ void Controller::disable() {
 
 void Controller::setTargetTheta(double newTheta) {
   if (newTheta > PI) {
-      absTargetTheta = newTheta - TWO_PI;
-    }
+    absTargetTheta = newTheta - TWO_PI;
+  }
 
-    else if (newTheta < -PI) {
-      absTargetTheta = TWO_PI + newTheta;
-    }
-    else {
-      absTargetTheta = newTheta;
-    }
+  else if (newTheta < -PI) {
+    absTargetTheta = TWO_PI + newTheta;
+  }
+  else {
+    absTargetTheta = newTheta;
+  }
+  thetaPID->ResetSumError();
 }
 
 void Controller::setTargetVx(double newVx) {

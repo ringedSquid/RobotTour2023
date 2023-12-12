@@ -1,5 +1,4 @@
 #include "DCMotor.h"
-#include <PID_v1.h>
 #include <Filters.h>
 
 DCMotor::DCMotor(uint8_t iEncoderP1, uint8_t iEncoderP2, 
@@ -25,9 +24,11 @@ DCMotor::DCMotor(uint8_t iEncoderP1, uint8_t iEncoderP2,
   Kd = iKd;
   F = iF;
   filterFreq = iFilterFreq;
-  tpusPID = new PID(&currentTPus, &pidOut, &targetTPus,
-                    Kp, Ki, Kd,
-                    DIRECT);
+  tpusPID = new PID_Ballsack(
+    &currentTPus, &pidOut, &targetTPus,
+    Kp, Ki, Kd,
+    DIRECT
+    ); 
   lowPassTPus = new FilterOnePole(LOWPASS, filterFreq);
 }
                 
@@ -43,14 +44,14 @@ void DCMotor::init()
   ledcAttachPin(motorP1, PWMChannel1);
   ledcAttachPin(motorP2, PWMChannel2);
   motorPWM = 0;
-
-  tpusPID->SetOutputLimits(-(int)(pow(2, 13)-1), (int)(pow(2, 13)-1));
   
   targetTPus = 0;
   currentTPus = 0;
   ticks = 0;
   oldTicks = 0;
-  
+
+  tpusPID->SetOutputLimits(-(int)(pow(2, 13)-1), (int)(pow(2, 13)-1));
+  tpusPID->SetSampleTime(intervalus/1000);
   oldus = micros();
 
   disable();
@@ -59,6 +60,7 @@ void DCMotor::init()
 
 void DCMotor::setTPus(double newTPus) {
   targetTPus = newTPus;
+  tpusPID->ResetSumError();
 }
 
 void DCMotor::setRPS(double newRPS) {

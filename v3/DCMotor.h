@@ -2,7 +2,7 @@
 #define DCMotor_h
 
 #include <Arduino.h>
-#include <PID_v1.h>
+#include "PID_Ballsack.h"
 #include <Filters.h>
 
 class DCMotor {
@@ -27,7 +27,7 @@ class DCMotor {
     uint32_t intervalus;
 
     //Speed control/PID
-    PID *tpusPID;
+    PID_Ballsack *tpusPID;
 
     //Speed lowpass Filter
     FilterOnePole *lowPassTPus;

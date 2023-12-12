@@ -49,7 +49,6 @@ Controller controller
   0
 );
 
-
 //Interrupts
 void motorInterruptHandlerLA() {
   motorL.tickEncoderA();
@@ -139,27 +138,33 @@ void setup() {
 
   STATE = TUNING;
   LED_STATE();
-
+  
   odo.init(Vector2d(0, 0), 0);
+  
   controller.init();
   controller.setTargetTheta(0);
   controller.enable();
+
 
 }
 double oldt = millis();
 double thet = 0;
 void loop() {
   if (millis() - oldt > 50) {
-    controller.setTargetTheta(thet);
-    Serial.printf("%f, %f\n", odo.getTheta(), thet);
+    Serial.printf("CURR: %f, TARG: %f\n", odo.getTheta(), thet);
   }
+  
   if (BTN_STATE(0)) {
     thet += PI/2;
+    controller.setTargetTheta(thet);
     
   }
   if (BTN_STATE(1)) {
     thet -= PI/2;
+    controller.setTargetTheta(thet);
   }
+  
+  
   controller.update();
   
 }

@@ -3,8 +3,8 @@
 
 #include "DCMotor.h"
 #include "odometry.h"
+#include "PID_Ballsack.h"
 
-#include <PID_v1.h>
 #include <ArduinoEigenDense.h>
 using namespace Eigen;
 
@@ -20,8 +20,8 @@ class Controller {
 
     double currentTheta;
 
-    //PID out
-    PID *thetaPID;
+    //PID_Ballsack out
+    PID_Ballsack *thetaPID;
     
     double targetAngVel;
     double maxAngVel;
