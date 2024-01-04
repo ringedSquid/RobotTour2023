@@ -47,6 +47,10 @@ double SimplePursuit::getVx() {
    
 }
 
+double SimplePursuit::getTheta() {
+  return
+}
+
 class SimplePursuit {
   private:
     Vector2d *path;
