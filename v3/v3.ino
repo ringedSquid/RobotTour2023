@@ -4,10 +4,12 @@
 #include "DCMotor.h"
 #include "odometry.h"
 #include "controller.h"
+#include "SimplePursuit.h"
 
 #include <ArduinoEigenDense.h>
 using namespace Eigen;
 
+Vector2d PATH[] PATH0;
 //Init objects
 DCMotor motorL
 (
@@ -47,6 +49,13 @@ Controller controller
   CONTROLLER_INTERVAL_US,
   POSE_KP, POSE_KI, POSE_KD,
   0
+);
+
+SimplePursuit simplePursuit
+(
+  &PATH0, PATH0_SIZE,
+  &odo,
+  CHECKRS, TRAFDIST
 );
 
 //Interrupts

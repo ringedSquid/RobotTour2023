@@ -26,8 +26,6 @@
 #define MOTOR_R_KD 0*pow(10, 2)
 #define MOTOR_R_F 0*pow(10, 7)
 
-
-
 #define MOTOR_L_KP 0.4*pow(10, 7)
 #define MOTOR_L_KI 0.6*pow(10, 7)
 #define MOTOR_L_KD 0*pow(10, 2)
@@ -51,6 +49,11 @@
 #define POSE_KI 0.8
 #define POSE_KD 0
 #define POSE_F  0
+
+//SIMPLE PURSUIT TUNING VALUES 
+#define CHECKRS 0 //all in mm
+#define TRAFDIST 0
+
 //IMU TUNING VALUES
 #define IMU_POLL_INTERVAL_US 0
 #define IMU_VEL_HIGHPASS_FREQ 0
