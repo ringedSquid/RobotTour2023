@@ -14,6 +14,7 @@ class SimplePursuit {
     Vector2d *path;
     Odometry *odometry;
 
+    //AN INDEX CAP
     byte pathLength;
     byte prevPointIndex;
     byte goalPointIndex;
@@ -27,6 +28,7 @@ class SimplePursuit {
 
     //TrafDist
     //distace from the "traffic light" before you start slowing down/speeding up
+    double currentVx;
   public:
     SimplePursuit(Vector2d *iPath, byte iPathLength, 
                   Odometry *iOdometry, double iCheckrs,
@@ -38,7 +40,9 @@ class SimplePursuit {
 
     double getDistToGoalPoint();
 
-    double getVx(double rTime, double rDist);
+    //Time remaining, distance remaining
+    void updateVx(double rTime, double rDist);
+    double getVx();
     double getTheta();
 
     Vector2d getGoalPoint();

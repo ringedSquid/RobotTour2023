@@ -9,7 +9,10 @@
 #include <ArduinoEigenDense.h>
 using namespace Eigen;
 
-Vector2d PATH[] PATH0;
+//Path constants
+Vector2d PATH[] = PATH0;
+const byte PATH_SIZE = PATH0_SIZE;
+
 //Init objects
 DCMotor motorL
 (
@@ -53,7 +56,7 @@ Controller controller
 
 SimplePursuit simplePursuit
 (
-  &PATH0, PATH0_SIZE,
+  PATH, PATH_SIZE,
   &odo,
   CHECKRS, TRAFDIST
 );

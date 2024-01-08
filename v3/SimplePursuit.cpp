@@ -46,10 +46,20 @@ Vector2d SimplePursuit::getGoalPoint() {
   return path[goalPointIndex];
 }
 
-double SimplePursuit::getVx(double rTime, double rDist) {
-  double totalDist = getDist(path[prevPointIndex], path[goalPointIndex]);
-  double vAvg = rDist/rTime;
-  return vAvg*totalDist/(totalDist - trafDist);
+void SimplePursuit::updateVx(double rTime, double rDist) {
+  double totalDist = getDist(path[prevPointIndex], getGoalPoint());
+  double vAvg = (pathLength-cDist)/rTime;
+  double distFromPoint = getDist(odometry->getPose(), getGoalPoint());
+  if (getDist(distFromPoint < trafDist) {
+    return (currentVx/trafDist)*distFromPoint;
+  }
+  else if (distFromPoint > totalDist - trafDist)
+    return currentVx - (currentVx/trafDist)*(trafDist - DistFromPoint);
+  }
+  else {
+    currentVx = vAvg*totalDist/(totalDist - trafDist);
+    return currentVx;
+  }
 }
 
 double SimplePursuit::getTheta() {
@@ -63,5 +73,5 @@ double SimplePursuit::getTheta() {
     }
     return -PI/2;
   }
-  return atan2(dy/dx);
+  return atan2(dy, dx);
 }
