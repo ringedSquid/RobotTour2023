@@ -22,6 +22,11 @@ double SimplePursuit::getDist(Vector2d p1, Vector2d p2) {
 void SimplePursuit::init() {
   prevPointIndex = 0;
   goalPointIndex = 1;
+  pathDist = 0;
+  for (int i=1; i<pathLength; i++) {
+    pathDist += getDist(path[i-1], path[i]);    
+  }
+  pathDist -= getDist(path[prevPointIndex], getGoalPoint());
 }
 
 //selects next point in path
@@ -31,6 +36,7 @@ boolean SimplePursuit::nextPoint() {
   }
   prevPointIndex++;
   goalPointIndex++;
+  pathDist -= getDist(path[prevPointIndex], getGoalPoint());
   return true;
 }
 
@@ -46,15 +52,19 @@ Vector2d SimplePursuit::getGoalPoint() {
   return path[goalPointIndex];
 }
 
-void SimplePursuit::updateVx(double rTime, double rDist) {
+Vector2d SimplePursuit::getEndPoint() {
+  return path[pathLength-1];
+}
+
+double SimplePursuit::getVx(double rTime, double rDist) {
   double totalDist = getDist(path[prevPointIndex], getGoalPoint());
-  double vAvg = (pathLength-cDist)/rTime;
+  double vAvg = (pathLength-rDist)/rTime;
   double distFromPoint = getDist(odometry->getPose(), getGoalPoint());
-  if (getDist(distFromPoint < trafDist) {
+  if (distFromPoint < trafDist) {
     return (currentVx/trafDist)*distFromPoint;
   }
-  else if (distFromPoint > totalDist - trafDist)
-    return currentVx - (currentVx/trafDist)*(trafDist - DistFromPoint);
+  else if (distFromPoint > totalDist - trafDist) {
+    return currentVx - (currentVx/trafDist)*(trafDist - distFromPoint);
   }
   else {
     currentVx = vAvg*totalDist/(totalDist - trafDist);
@@ -74,4 +84,8 @@ double SimplePursuit::getTheta() {
     return -PI/2;
   }
   return atan2(dy, dx);
+}
+
+double SimplePursuit::getPathDist() {
+  return pathDist;
 }

@@ -24,11 +24,13 @@ class SimplePursuit {
     //Distance before  acc/decell
     double trafDist;
 
-    double getDist(Vector2d p1, Vector2d p2);
-
     //TrafDist
     //distace from the "traffic light" before you start slowing down/speeding up
     double currentVx;
+
+    //Distance along the path, used for r_dist calculations
+    double pathDist;
+    
   public:
     SimplePursuit(Vector2d *iPath, byte iPathLength, 
                   Odometry *iOdometry, double iCheckrs,
@@ -41,11 +43,14 @@ class SimplePursuit {
     double getDistToGoalPoint();
 
     //Time remaining, distance remaining
-    void updateVx(double rTime, double rDist);
-    double getVx();
+    double getVx(double rTime, double rDist);
     double getTheta();
 
     Vector2d getGoalPoint();
+    Vector2d getEndPoint();
+
+    double getPathDist();
+    double getDist(Vector2d p1, Vector2d p2);
 };
 
 

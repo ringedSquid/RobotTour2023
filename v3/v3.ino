@@ -5,6 +5,7 @@
 #include "odometry.h"
 #include "controller.h"
 #include "SimplePursuit.h"
+#include "Robot.h"
 
 #include <ArduinoEigenDense.h>
 using namespace Eigen;
@@ -59,6 +60,17 @@ SimplePursuit simplePursuit
   PATH, PATH_SIZE,
   &odo,
   CHECKRS, TRAFDIST
+);
+
+Robot robot
+(
+  &simplePursuit,
+  &controller,
+  &odo,
+  TARGET_TIME,
+  TURN_INTERVAL_US,
+  CENTER_TO_DOWEL,
+  END_DISTANCE
 );
 
 //Interrupts
@@ -116,7 +128,7 @@ void LED_STATE() {
       digitalWrite(RED, HIGH);
       digitalWrite(GRN, LOW);
       break;
-    case TUNING:
+    case STOPPED:
       digitalWrite(RED, LOW);
       digitalWrite(GRN, LOW);
       break;
@@ -148,35 +160,72 @@ void setup() {
 
   //Init objects
 
-  STATE = TUNING;
+  STATE = INIT;
   LED_STATE();
-  
-  odo.init(Vector2d(0, 0), 0);
-  
-  controller.init();
-  controller.setTargetTheta(0);
-  controller.enable();
 
+  robot.init(Vector2d(0, 0), 0);
 
+  STATE = IDLE;
+  LED_STATE();
 }
-double oldt = millis();
-double thet = 0;
+
 void loop() {
-  if (millis() - oldt > 50) {
-    Serial.printf("CURR: %f, TARG: %f\n", odo.getTheta(), thet);
+  switch (STATE) {
+    case IDLE:
+      robot.update();
+      //Switch to READY
+      if (BTN_STATE(1)) {
+        robot.init(PATH[0], atan2(PATH[1](1)-PATH[0](1), PATH[1](0)-PATH[0](0)));
+        STATE = READY;
+        LED_STATE();
+      }
+      break;
+    case READY:
+      robot.update();
+      if (BTN_STATE(1)) {
+        robot.init(PATH[0], atan2(PATH[1](1)-PATH[0](1), PATH[1](0)-PATH[0](0)));
+        STATE = READY;
+        LED_STATE();
+      }
+      if (BTN_STATE(0)) {
+        robot.startPath();
+        STATE = RUNNING;
+        LED_STATE();
+      }
+      break;
+    case RUNNING:
+      robot.update();
+      if (BTN_STATE(1)) {
+        robot.init(PATH[0], atan2(PATH[1](1)-PATH[0](1), PATH[1](0)-PATH[0](0)));
+        STATE = READY;
+        LED_STATE();
+      }
+      if (BTN_STATE(0)) {
+        robot.stopPath();
+        STATE = STOPPED;
+        LED_STATE();
+      }
+      if (robot.isNearTarget()) {
+        robot.stopPath();
+        STATE = STOPPED;
+        LED_STATE;
+      }
+      break;
+    case STOPPED:
+      robot.update();
+      if (BTN_STATE(1)) {
+        robot.init(PATH[0], PI);
+        STATE = READY;
+        LED_STATE();
+      }
+      if (BTN_STATE(0)) {
+        STATE = IDLE;
+        LED_STATE();
+      }
+      break;
+    default:
+      STATE = IDLE;
+      break;
   }
-  
-  if (BTN_STATE(0)) {
-    thet += PI/2;
-    controller.setTargetTheta(thet);
-    
-  }
-  if (BTN_STATE(1)) {
-    thet -= PI/2;
-    controller.setTargetTheta(thet);
-  }
-  
-  
-  controller.update();
   
 }

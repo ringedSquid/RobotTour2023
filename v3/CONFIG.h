@@ -51,8 +51,13 @@
 #define POSE_F  0
 
 //SIMPLE PURSUIT TUNING VALUES 
-#define CHECKRS 0 //all in mm
-#define TRAFDIST 0
+#define CHECKRS 20.0 //all in mm
+#define TRAFDIST 200.0
+
+//ROBOT TUNING VALUES
+#define TURN_INTERVAL_US 2*pow(10, 6)
+#define CENTER_TO_DOWEL 80.0 //mm
+#define END_DISTANCE 20.0 //mm
 
 //IMU TUNING VALUES
 #define IMU_POLL_INTERVAL_US 0
@@ -64,4 +69,4 @@
 #define IDLE 1
 #define READY 2
 #define RUNNING 3
-#define TUNING 4
+#define STOPPED 4

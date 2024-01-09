@@ -1,25 +1,32 @@
 #include "Robot.h"
 #include "SimplePursuit.h"
 #include "controller.h"
+#include "odometry.h"
 
 Robot::Robot( 
       SimplePursuit *iSimplePursuit,
       Controller *iController,
-      double iTotal_d, double iTarget_t,
-      uint32_t iTurn_us;
+      Odometry *iOdometry,
+      double iTarget_t,
+      double iCenterToDowel,
+      double iEndDistance,
+      uint32_t iTurn_us
       )
 {
   simplePursuit = iSimplePursuit;
   controller = iController;
-  total_d = iTotal_d;
+  odometry = iOdometry;
   target_t = iTarget_t;
+  centerToDowel = iCenterToDowel;
+  endDistance = iEndDistance;
   turn_us = iTurn_us;
 }
 
-void Robot::init() {
+void Robot::init(Vector2d iPose, double iTheta) {
+  controller->init();
+  odometry->init(iPose, iTheta);
+  simplePursuit->init();
   STATE = 0;
-  current_d = 0;
-  controller->disable();
 }
 
 void Robot::update() {
@@ -28,9 +35,15 @@ void Robot::update() {
     case 0:
       break;
     case 1:
-      simplePursuit->updateVx();
-      controller->setTargetVx(simplePursuit->getVx());
+      //Calculate remaining distance, remainting time
+      double rTime = target_t - (micros() - start_us)/pow(10, 6);
+      double rDist = simplePursuit->getDistToGoalPoint() + simplePursuit->getPathDist();
+      
+      //Path following
+      controller->setTargetVx(simplePursuit->getVx(rTime, rDist));
       controller->setTargetTheta(simplePursuit->getTheta());
+      
+      //Check if at next point
       if (simplePursuit->atPoint()) {
         //check if end of path
         if (simplePursuit->nextPoint()) {
@@ -49,7 +62,9 @@ void Robot::update() {
         STATE = 1;
       }
       break;
-    case 3:
+      
+    default:
+      STATE = 0;
       break;
    }
 }
@@ -57,8 +72,17 @@ void Robot::update() {
 void Robot::startPath() {
   STATE = 1;
   start_us = micros();
+  controller->enable();
 }
 
 void Robot::stopPath() {
   STATE = 0;
+  controller->setTargetVx(0);
+  controller->disable();
+}
+
+bool Robot::isNearTarget() {
+  double dowelPointX = odometry->getX()+centerToDowel*cos(odometry->getTheta());
+  double dowelPointY = odometry->getY()+centerToDowel*sin(odometry->getTheta());
+  return (simplePursuit->getDist(Vector2d(dowelPointX, dowelPointY), simplePursuit->getEndPoint()) <= endDistance);
 }
