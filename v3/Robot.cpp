@@ -31,16 +31,19 @@ void Robot::init(Vector2d iPose, double iTheta) {
 
 void Robot::update() {
   controller->update();
+  double rTime;
+  double rDist;
   switch (STATE) {
     case 0:
       break;
     case 1:
       //Calculate remaining distance, remainting time
-      double rTime = target_t - (micros() - start_us)/pow(10, 6);
-      double rDist = simplePursuit->getDistToGoalPoint() + simplePursuit->getPathDist();
+      rTime = target_t - (micros() - start_us)/pow(10, 6);
+      rDist = simplePursuit->getDistToGoalPoint() + simplePursuit->getPathDist();
       
       //Path following
       controller->setTargetVx(simplePursuit->getVx(rTime, rDist));
+      Serial.printf("Spd: %f P: %f, %f, %f\n", simplePursuit->getVx(rTime, rDist), odometry->getX(), odometry->getY(), odometry->getTheta());
       controller->setTargetTheta(simplePursuit->getTheta());
       
       //Check if at next point

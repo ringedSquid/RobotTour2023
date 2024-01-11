@@ -59,12 +59,12 @@ void Controller::update() {
   
   //most optimal turn
   if (abs(currentTheta - absTargetTheta) > PI) {
-  if ((currentTheta < 0) && (absTargetTheta > 0)) {
-      relTargetTheta = absTargetTheta - TWO_PI;
-  }
-  else if ((currentTheta > 0) && (absTargetTheta < 0)) {
-    relTargetTheta = absTargetTheta + TWO_PI;
-  }
+    if ((currentTheta < 0) && (absTargetTheta > 0)) {
+        relTargetTheta = absTargetTheta - TWO_PI;
+    }
+    else if ((currentTheta > 0) && (absTargetTheta < 0)) {
+      relTargetTheta = absTargetTheta + TWO_PI;
+    }
   }
   else {
     relTargetTheta = absTargetTheta;

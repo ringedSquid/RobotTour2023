@@ -68,9 +68,9 @@ Robot robot
   &controller,
   &odo,
   TARGET_TIME,
-  TURN_INTERVAL_US,
   CENTER_TO_DOWEL,
-  END_DISTANCE
+  END_DISTANCE,
+  TURN_INTERVAL_US
 );
 
 //Interrupts
@@ -214,7 +214,7 @@ void loop() {
     case STOPPED:
       robot.update();
       if (BTN_STATE(1)) {
-        robot.init(PATH[0], PI);
+        robot.init(PATH[0], atan2(PATH[1](1)-PATH[0](1), PATH[1](0)-PATH[0](0)));
         STATE = READY;
         LED_STATE();
       }

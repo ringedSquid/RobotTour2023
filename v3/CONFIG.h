@@ -52,7 +52,7 @@
 
 //SIMPLE PURSUIT TUNING VALUES 
 #define CHECKRS 20.0 //all in mm
-#define TRAFDIST 200.0
+#define TRAFDIST 50.0
 
 //ROBOT TUNING VALUES
 #define TURN_INTERVAL_US 2*pow(10, 6)

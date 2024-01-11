@@ -58,18 +58,20 @@ Vector2d SimplePursuit::getEndPoint() {
 
 double SimplePursuit::getVx(double rTime, double rDist) {
   double totalDist = getDist(path[prevPointIndex], getGoalPoint());
-  double vAvg = (pathLength-rDist)/rTime;
+  double vAvg = rDist/rTime;
   double distFromPoint = getDist(odometry->getPose(), getGoalPoint());
-  if (distFromPoint < trafDist) {
-    return (currentVx/trafDist)*distFromPoint;
+  //Serial.printf("RD: %f, vAvg: %f\n", rDist, vAvg);
+  currentVx = vAvg*totalDist/(totalDist - trafDist);
+  if ((totalDist - distFromPoint) < trafDist) {
+    return (currentVx/trafDist)*(totalDist - distFromPoint);
   }
-  else if (distFromPoint > totalDist - trafDist) {
+  else if (distFromPoint > (totalDist - trafDist)) {
     return currentVx - (currentVx/trafDist)*(trafDist - distFromPoint);
   }
   else {
-    currentVx = vAvg*totalDist/(totalDist - trafDist);
     return currentVx;
   }
+  
 }
 
 double SimplePursuit::getTheta() {
