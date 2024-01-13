@@ -26,6 +26,7 @@ void Robot::init(Vector2d iPose, double iTheta) {
   controller->init();
   odometry->init(iPose, iTheta);
   simplePursuit->init();
+  totalTurnDelay = (simplePursuit->getPathIndexCount()-1)*((turn_us/pow(10, 6)) + 0.5);
   STATE = 0;
 }
 
@@ -38,21 +39,23 @@ void Robot::update() {
       break;
     case 1:
       //Calculate remaining distance, remainting time
-      rTime = target_t - (micros() - start_us)/pow(10, 6);
+      rTime = target_t - (micros() - start_us)/pow(10, 6) - totalTurnDelay;
       rDist = simplePursuit->getDistToGoalPoint() + simplePursuit->getPathDist();
       
       //Path following
       controller->setTargetVx(simplePursuit->getVx(rTime, rDist));
-      Serial.printf("Spd: %f P: %f, %f, %f\n", simplePursuit->getVx(rTime, rDist), odometry->getX(), odometry->getY(), odometry->getTheta());
+      Serial.printf("Vx: %f Vrx: %f\n", simplePursuit->getVx(rTime, rDist), odometry->getLinVelx());
       controller->setTargetTheta(simplePursuit->getTheta());
       
       //Check if at next point
       if (simplePursuit->atPoint()) {
         //check if end of path
         if (simplePursuit->nextPoint()) {
-          controller->setTargetVx(0);
+           delay(500);
+           controller->setTargetVx(0);
            STATE = 2;
            buffer_us = micros();
+           controller->setTargetTheta(simplePursuit->getTheta());
         }
         else {
           STATE = 0;

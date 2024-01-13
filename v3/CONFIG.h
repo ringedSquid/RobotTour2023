@@ -37,25 +37,25 @@
 #define TICKS_PER_REV 1200
 
 //ODOMETRY TUNING VALUES
-#define ODOMETRY_INTERVAL_US (uint32_t)20*pow(10, 3)
-#define STARTING_POSE Vector3d(0, 0, 0)
+#define ODOMETRY_INTERVAL_US (uint32_t)10*pow(10, 3)
+//#define STARTING_POSE Vector3d(0, 0, 0)
 //#define STARTING_THETA 0
 
 //ROBOT CONTROLLER TUNING VALUES
 #define MAX_ANG_VEL 5 //Rad/s
 #define CONTROLLER_INTERVAL_US 0
 
-#define POSE_KP 4.22
+#define POSE_KP 4.02
 #define POSE_KI 0.8
 #define POSE_KD 0
 #define POSE_F  0
 
 //SIMPLE PURSUIT TUNING VALUES 
-#define CHECKRS 20.0 //all in mm
+#define CHECKRS 10.0 //all in mm
 #define TRAFDIST 50.0
 
 //ROBOT TUNING VALUES
-#define TURN_INTERVAL_US 2*pow(10, 6)
+#define TURN_INTERVAL_US 1*pow(10, 6)
 #define CENTER_TO_DOWEL 80.0 //mm
 #define END_DISTANCE 20.0 //mm
 

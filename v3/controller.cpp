@@ -1,4 +1,5 @@
- #include "controller.h"
+#include "controller.h"
+#include <Filters.h>
 
 #include "PID_Ballsack.h"
 #include <ArduinoEigenDense.h>
@@ -25,6 +26,7 @@ Controller::Controller(
   thetaKd = iThetaKd;
   thetaF = iThetaF;
   maxAngVel = iMaxAngVel;
+  lowPassVx = new FilterOnePole(LOWPASS, 5);
   
   thetaPID = new PID_Ballsack(
     &currentTheta, &targetAngVel, &relTargetTheta,
@@ -56,6 +58,7 @@ void Controller::update() {
   motorR->update();
   odometry->update();
   currentTheta = odometry->getTheta();
+  lowPassVx->input(targetVx);
   
   //most optimal turn
   if (abs(currentTheta - absTargetTheta) > PI) {

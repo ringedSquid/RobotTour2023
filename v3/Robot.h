@@ -30,6 +30,7 @@ class Robot {
     //getting distance from end point
     double centerToDowel;
     double endDistance;
+    double totalTurnDelay;
     
   public:
     Robot( 

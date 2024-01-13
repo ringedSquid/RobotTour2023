@@ -60,7 +60,7 @@ void DCMotor::init()
 
 void DCMotor::setTPus(double newTPus) {
   targetTPus = newTPus;
-  tpusPID->ResetSumError();
+  //tpusPID->ResetSumError();
 }
 
 void DCMotor::setRPS(double newRPS) {

@@ -4,6 +4,7 @@
 #include "DCMotor.h"
 #include "odometry.h"
 #include "PID_Ballsack.h"
+#include <Filters.h>
 
 #include <ArduinoEigenDense.h>
 using namespace Eigen;
@@ -46,6 +47,7 @@ class Controller {
     double computeLRPS();
 
     bool enabled;
+    FilterOnePole *lowPassVx;
 
   public:
     Controller(

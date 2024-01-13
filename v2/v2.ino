@@ -142,7 +142,7 @@ void setup() {
 
   double trackDistance = 0;
   
-  for (int i=0; i<PATH0_SIZE-1; i++) {
+   for (int i=0; i<PATH0_SIZE-1; i++) {
     trackDistance += abs(PATH[i+1](0) - PATH[i](0));
     trackDistance += abs(PATH[i+1](1) - PATH[i](1)); 
   }

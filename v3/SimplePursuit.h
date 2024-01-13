@@ -36,6 +36,7 @@ class SimplePursuit {
                   Odometry *iOdometry, double iCheckrs,
                   double iTrafDist); 
     void init();
+    int getPathIndexCount();
     
     boolean nextPoint();
     boolean atPoint();
