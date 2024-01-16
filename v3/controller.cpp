@@ -26,7 +26,7 @@ Controller::Controller(
   thetaKd = iThetaKd;
   thetaF = iThetaF;
   maxAngVel = iMaxAngVel;
-  lowPassVx = new FilterOnePole(LOWPASS, 5);
+  lowPassVx = new FilterOnePole(LOWPASS, 2);
   
   thetaPID = new PID_Ballsack(
     &currentTheta, &targetAngVel, &relTargetTheta,
@@ -113,8 +113,8 @@ void Controller::setTargetVx(double newVx) {
 }
 
 double Controller::computeRRPS() {
-  return (targetVx/wheelRadius)+(trackWidth/2)*(targetAngVel/wheelRadius);
+  return (lowPassVx->output()/wheelRadius)+(trackWidth/2)*(targetAngVel/wheelRadius);
 }
 double Controller::computeLRPS() {
-  return (targetVx/wheelRadius)-(trackWidth/2)*(targetAngVel/wheelRadius);
+  return (lowPassVx->output()/wheelRadius)-(trackWidth/2)*(targetAngVel/wheelRadius);
 }

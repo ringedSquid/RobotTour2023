@@ -26,7 +26,8 @@ void Robot::init(Vector2d iPose, double iTheta) {
   controller->init();
   odometry->init(iPose, iTheta);
   simplePursuit->init();
-  totalTurnDelay = (simplePursuit->getPathIndexCount()-1)*((turn_us/pow(10, 6)) + 0.5);
+  totalTurnDelay = 0;
+  // = (simplePursuit->getPathIndexCount()-1)*((turn_us/pow(10, 6)) + 0.5);
   STATE = 0;
 }
 
@@ -39,20 +40,25 @@ void Robot::update() {
       break;
     case 1:
       //Calculate remaining distance, remainting time
-      rTime = target_t - (micros() - start_us)/pow(10, 6) - totalTurnDelay;
+      rTime = target_t - (micros() - start_us)/pow(10, 6);
       rDist = simplePursuit->getDistToGoalPoint() + simplePursuit->getPathDist();
+      Serial.printf("Target %f, Elapsed %f, rTime %f, rDist %f\n", target_t, (micros()-start_us)/pow(10, 6), rTime, rDist);
       
       //Path following
       controller->setTargetVx(simplePursuit->getVx(rTime, rDist));
-      Serial.printf("Vx: %f Vrx: %f\n", simplePursuit->getVx(rTime, rDist), odometry->getLinVelx());
+      //Serial.printf("Vx: %f Vrx: %f 350\n", simplePursuit->getVx(rTime, rDist), odometry->getLinVelx());
       controller->setTargetTheta(simplePursuit->getTheta());
       
       //Check if at next point
       if (simplePursuit->atPoint()) {
+        controller->setTargetVx(0);
+        buffer_us = micros();
+        double buffer_speed = simplePursuit->getVx(rTime, rDist);
+        while (micros() - buffer_us < 500*pow(10, 3)) {
+            controller->update();
+        }
         //check if end of path
         if (simplePursuit->nextPoint()) {
-           delay(500);
-           controller->setTargetVx(0);
            STATE = 2;
            buffer_us = micros();
            controller->setTargetTheta(simplePursuit->getTheta());
@@ -63,7 +69,7 @@ void Robot::update() {
       }
       break;
     case 2:
-      controller->setTargetTheta(simplePursuit->getTheta());
+      //controller->setTargetTheta(simplePursuit->getTheta());
       if (micros() - buffer_us > turn_us) {
         STATE = 1;
       }
