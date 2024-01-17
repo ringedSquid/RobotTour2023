@@ -37,6 +37,7 @@ class Odometry {
     void setPose(Vector2d newPose);
     void setX(double newX);
     void setY(double newY);
+    void setTheta(double newTheta);
     void setXYTheta(Vector3d newXYTheta);
 
     double getLinVelx();

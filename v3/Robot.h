@@ -7,13 +7,14 @@ using namespace Eigen;
 #include "SimplePursuit.h"
 #include "controller.h"
 #include "odometry.h"
-
+//#include "imu.h"
 
 class Robot {
   private:
     SimplePursuit *simplePursuit;
     Controller *controller; //robot controller
     Odometry *odometry;
+    //IMU *imu;
     
     //0 for idle
     //1 for turning
@@ -37,6 +38,7 @@ class Robot {
       SimplePursuit *iSimplePursuit,
       Controller *iController,
       Odometry *iOdometry,
+      //IMU *iimu,
       double iTarget_t,
       double iCenterToDowel,
       double iEndDistance,

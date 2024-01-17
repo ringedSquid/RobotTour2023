@@ -74,6 +74,7 @@ class DCMotor {
     void tickEncoderA();
     void tickEncoderB();
     void computeTPus();
+    void resetIntegral();
     
     double getTPus();
     double getRPS();

@@ -67,6 +67,8 @@ class Controller {
 
     void setTargetVx(double newVx);
     void setTargetTheta(double newTheta);
+    void resetMotorIntegral();
+    void updateTargetTheta(double newTheta);
 
 };
 

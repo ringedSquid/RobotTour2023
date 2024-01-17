@@ -26,7 +26,7 @@ Controller::Controller(
   thetaKd = iThetaKd;
   thetaF = iThetaF;
   maxAngVel = iMaxAngVel;
-  lowPassVx = new FilterOnePole(LOWPASS, 2);
+  lowPassVx = new FilterOnePole(LOWPASS, 4);
   
   thetaPID = new PID_Ballsack(
     &currentTheta, &targetAngVel, &relTargetTheta,
@@ -108,8 +108,27 @@ void Controller::setTargetTheta(double newTheta) {
   thetaPID->ResetSumError();
 }
 
+//no integral reset
+void Controller::updateTargetTheta(double newTheta) {
+  if (newTheta > PI) {
+    absTargetTheta = newTheta - TWO_PI;
+  }
+
+  else if (newTheta < -PI) {
+    absTargetTheta = TWO_PI + newTheta;
+  }
+  else {
+    absTargetTheta = newTheta;
+  }
+}
+
 void Controller::setTargetVx(double newVx) {
   targetVx = newVx;
+}
+
+void Controller::resetMotorIntegral() {
+  motorR->resetIntegral();
+  motorL->resetIntegral();
 }
 
 double Controller::computeRRPS() {

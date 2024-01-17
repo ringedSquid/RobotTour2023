@@ -2,11 +2,13 @@
 #include "SimplePursuit.h"
 #include "controller.h"
 #include "odometry.h"
+//#include "imu.h"
 
 Robot::Robot( 
       SimplePursuit *iSimplePursuit,
       Controller *iController,
       Odometry *iOdometry,
+      //IMU *iimu,
       double iTarget_t,
       double iCenterToDowel,
       double iEndDistance,
@@ -16,6 +18,7 @@ Robot::Robot(
   simplePursuit = iSimplePursuit;
   controller = iController;
   odometry = iOdometry;
+  //imu = iimu;
   target_t = iTarget_t;
   centerToDowel = iCenterToDowel;
   endDistance = iEndDistance;
@@ -26,8 +29,7 @@ void Robot::init(Vector2d iPose, double iTheta) {
   controller->init();
   odometry->init(iPose, iTheta);
   simplePursuit->init();
-  totalTurnDelay = 0;
-  // = (simplePursuit->getPathIndexCount()-1)*((turn_us/pow(10, 6)) + 0.5);
+  totalTurnDelay = (simplePursuit->getPathIndexCount()-1)*((turn_us/pow(10, 6)) + 0.5);
   STATE = 0;
 }
 
@@ -40,9 +42,10 @@ void Robot::update() {
       break;
     case 1:
       //Calculate remaining distance, remainting time
-      rTime = target_t - (micros() - start_us)/pow(10, 6);
+      //Use avg time over entire track for now
+      rTime = target_t - totalTurnDelay; //target_t - (micros() - start_us)/pow(10, 6);
       rDist = simplePursuit->getDistToGoalPoint() + simplePursuit->getPathDist();
-      Serial.printf("Target %f, Elapsed %f, rTime %f, rDist %f\n", target_t, (micros()-start_us)/pow(10, 6), rTime, rDist);
+      //Serial.printf("Target %f, Elapsed %f, rTime %f, rDist %f\n", target_t, (micros()-start_us)/pow(10, 6), rTime, rDist);
       
       //Path following
       controller->setTargetVx(simplePursuit->getVx(rTime, rDist));
@@ -61,6 +64,7 @@ void Robot::update() {
         if (simplePursuit->nextPoint()) {
            STATE = 2;
            buffer_us = micros();
+           controller->resetMotorIntegral();
            controller->setTargetTheta(simplePursuit->getTheta());
         }
         else {
@@ -70,7 +74,9 @@ void Robot::update() {
       break;
     case 2:
       //controller->setTargetTheta(simplePursuit->getTheta());
+      controller->updateTargetTheta(simplePursuit->getTheta());
       if (micros() - buffer_us > turn_us) {
+        controller->resetMotorIntegral();
         STATE = 1;
       }
       break;
@@ -89,7 +95,11 @@ void Robot::startPath() {
 
 void Robot::stopPath() {
   STATE = 0;
+  controller->resetMotorIntegral();
   controller->setTargetVx(0);
+  while (micros() - buffer_us < 500*pow(10, 3)) {
+            controller->update();
+  }
   controller->disable();
 }
 

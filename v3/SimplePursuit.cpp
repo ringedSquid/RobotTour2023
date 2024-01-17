@@ -26,7 +26,7 @@ void SimplePursuit::init() {
   for (int i=1; i<pathLength; i++) {
     pathDist += getDist(path[i-1], path[i]);    
   }
-  pathDist -= getDist(path[prevPointIndex], getGoalPoint());
+  //pathDist -= getDist(path[prevPointIndex], getGoalPoint());
 }
 
 //selects next point in path
@@ -36,7 +36,8 @@ boolean SimplePursuit::nextPoint() {
   }
   prevPointIndex++;
   goalPointIndex++;
-  pathDist -= getDist(path[prevPointIndex], getGoalPoint());
+  //For use of constant v avg
+  //pathDist -= getDist(path[prevPointIndex], getGoalPoint());
   return true;
 }
 
@@ -62,9 +63,12 @@ int SimplePursuit::getPathIndexCount() {
 
 
 double SimplePursuit::getVx(double rTime, double rDist) {
+  /*
   double totalDist = getDist(path[prevPointIndex], getGoalPoint());
   double vAvg = rDist/rTime;
   double distFromPoint = getDist(odometry->getPose(), getGoalPoint());
+  */
+  return pathDist/rTime;
   //Serial.printf("RD: %f, vAvg: %f\n", rDist, vAvg);
   /*
   currentVx = vAvg*totalDist/(totalDist - trafDist);
@@ -78,7 +82,7 @@ double SimplePursuit::getVx(double rTime, double rDist) {
     return currentVx;
   }
   */
-  return vAvg;
+  //return vAvg;
 }
 
 double SimplePursuit::getTheta() {

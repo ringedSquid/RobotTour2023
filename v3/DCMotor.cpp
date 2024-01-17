@@ -133,6 +133,9 @@ void DCMotor::tickEncoderB() {
   }
 }
 
+void DCMotor::resetIntegral() {
+  tpusPID->ResetSumError();
+}
 double DCMotor::getTPus() {
   return currentTPus;
 }

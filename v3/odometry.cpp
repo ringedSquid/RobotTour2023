@@ -69,6 +69,10 @@ void Odometry::setY(double newY) {
   pose(1) = newY;
 }
 
+void Odometry::setTheta(double newTheta) {
+  theta = newTheta;
+}
+
 void Odometry::setXYTheta(Vector3d newXYTheta) {
   pose(0) = newXYTheta(0);
   pose(1) = newXYTheta(1);
@@ -90,7 +94,6 @@ double Odometry::getX() {
 double Odometry::getY() {
   return pose(1);
 }
-
 
 double Odometry::getTheta() {
   return theta;
