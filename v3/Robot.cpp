@@ -90,6 +90,8 @@ void Robot::update() {
 void Robot::startPath() {
   STATE = 1;
   start_us = micros();
+  controller->setTargetTheta(odometry->getTheta());
+  controller->setTargetVx(0);
   controller->enable();
 }
 
