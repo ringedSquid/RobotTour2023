@@ -17,6 +17,7 @@
 
 //Oled
 #define OLED_ADD 0x3C
+#define OLED_RST -1
 
 //LEDS
 #define LED_0 16
@@ -25,12 +26,14 @@
 //SD Card
 #define SD_CS 5
 
+//oled
+#define I2C_ADDRESS 0x3C
 
 //Robot physical dimensions
 //in mm
-#define WHEEL_RADIUS 40
-#define TRACK_WIDTH 145.5
+#define WHEEL_RADIUS 40.46732
+#define TRACK_WIDTH 146.5
 
 //Controller tuning values
 #define MAX_ACCEL 200
-#define MAX_ANG_VEL 0
+#define MAX_ANG_VEL 200

@@ -53,6 +53,8 @@ class controller {
     double getMaxVx();
     double getMaxAx();
     double getMaxAngVx();
+
+    int getState();
     
 };
 

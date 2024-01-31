@@ -75,6 +75,7 @@ void controller::moveX(double dist) {
   STATE = 1;
 }
 
+
 void controller::turn(double theta) {
   //set accel and vel
   stepperL->setAcceleration(mmToSteps(maxAx));
@@ -99,4 +100,8 @@ double controller::getMaxAx() {
 
 double controller::getMaxAngVx() {
   return maxAngVx;
+}
+
+int controller::getState() {
+  return STATE;
 }
