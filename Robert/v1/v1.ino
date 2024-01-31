@@ -1,6 +1,8 @@
 #include "CONFIG.h"
 #include <AccelStepper.h>
 #include "controller.h"
+#include "simplePursuit.h"
+#include "robot.h"
 
 #include <Wire.h>
 #include "SSD1306Ascii.h"
@@ -15,8 +17,25 @@ controller robotController
 (
   WHEEL_RADIUS, TRACK_WIDTH,
   &stepperL, &stepperR,
-  STEPS_PER_REV
+  STEPS_PER_REV, TURN_US
 ); 
+
+Vector2d path[] = {Vector2d(0, 0), Vector2d(0, 300), Vector2d(300, 300), Vector2d(300, 0), Vector2d(0, 0)};
+
+simplePursuit robotSimplePursuit 
+(
+  path, 5,
+  10, 0
+);
+
+robot Robot 
+(
+  &robotSimplePursuit, &robotController,
+  MAX_ACCEL, MAX_ANG_VEL,
+  0
+);
+
+
 
 void setup() {
   //init pins
@@ -39,10 +58,14 @@ void setup() {
   oled.setFont(Adafruit5x7);
   oled.clear();
 
+  delay(1000);
+  /*
   //Invert direction
   stepperR.setPinsInverted(true);
   stepperL.setMinPulseWidth(2);
   stepperR.setMinPulseWidth(2);
+  */
+  /*
   
   robotController.init();
   
@@ -66,9 +89,12 @@ void setup() {
   }
   oled.set2X();
   oled.print(stepperR.currentPosition());
-  
+  */
+  Robot.init();
+  Robot.startPath();
 }
 
 void loop() {
+  Robot.update();
   
 }

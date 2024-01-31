@@ -20,16 +20,14 @@ class controller {
     
     uint32_t oldus;
 
+    double theta;
+
     
     AccelStepper *stepperL;
     AccelStepper *stepperR;
     uint32_t stepsPerRev;
 
     uint32_t turnInterval;
-
-    //Converts a step to mm traveled
-    long mmToSteps(double mm);
-    double stepsTomm(long steps);
 
     //0 is idle
     //1 is moving
@@ -42,6 +40,7 @@ class controller {
       uint32_t iStepsPerRev, uint32_t iTurnInterval
     );
 
+    void init(double iTheta);
     void init();
     void update();
 
@@ -51,14 +50,16 @@ class controller {
 
     //Motion profiled
     void moveX(double dist);
-    void turn(double theta);
+    void setTheta(double newTheta);
 
     double getMaxVx();
     double getMaxAx();
     double getMaxAngVx();
 
     int getState();
-    
+
+    long mmToSteps(double mm);
+    double stepsTomm(long steps);
 };
 
 #endif

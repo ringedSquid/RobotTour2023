@@ -90,11 +90,14 @@ void setup() {
   oled.set2X();
   oled.print(stepperR.currentPosition());
   */
+  /*
   Robot.init();
   Robot.startPath();
+  */
 }
 
 void loop() {
+  /*
   Robot.update();
-  
+  */
 }

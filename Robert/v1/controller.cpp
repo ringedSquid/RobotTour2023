@@ -17,6 +17,11 @@ controller::controller
   turnInterval = iTurnInterval;
 }
 
+void controller::init(double iTheta) {
+  init();
+  theta = iTheta;
+}
+
 void controller::init() {
   //init steppers
   stepperR->setPinsInverted(true);
@@ -28,6 +33,7 @@ void controller::init() {
   maxAngVx = 0;
   oldus = micros();
   STATE = 0;
+  theta = 0;
 }
 
 void controller::update() {
@@ -82,8 +88,12 @@ void controller::moveX(double dist) {
 }
 
 
-void controller::turn(double theta) {
+void controller::setTheta(double newTheta) {
   //set accel and vel
+  double deltaTheta = newTheta - theta;
+  if (abs(deltaTheta) > PI) {
+    deltaTheta -= TWO_PI;
+  }
   stepperL->setAcceleration(mmToSteps(maxAx));
   stepperR->setAcceleration(mmToSteps(maxAx));
   stepperL->setMaxSpeed(mmToSteps(maxAngVx));
@@ -91,8 +101,9 @@ void controller::turn(double theta) {
   stepperL->setSpeed(mmToSteps(maxAngVx));
   stepperR->setSpeed(mmToSteps(maxAngVx));
   //set wheel positions
-  stepperL->move(mmToSteps(0.5*trackWidth*theta));
-  stepperR->move(mmToSteps(-0.5*trackWidth*theta));
+  stepperL->move(mmToSteps(-0.5*trackWidth*deltaTheta));
+  stepperR->move(mmToSteps(0.5*trackWidth*deltaTheta));
+  theta = newTheta;
   STATE = 1;
 }
 
