@@ -19,10 +19,13 @@ class controller {
     double maxAngVx;
     
     uint32_t oldus;
+
     
     AccelStepper *stepperL;
     AccelStepper *stepperR;
     uint32_t stepsPerRev;
+
+    uint32_t turnInterval;
 
     //Converts a step to mm traveled
     long mmToSteps(double mm);
@@ -36,7 +39,7 @@ class controller {
     controller(
       double iWheelRadius, double iTrackWidth,
       AccelStepper *iStepperL, AccelStepper *iStepperR,
-      uint32_t iStepsPerRev
+      uint32_t iStepsPerRev, uint32_t iTurnInterval
     );
 
     void init();

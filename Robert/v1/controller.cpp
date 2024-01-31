@@ -6,7 +6,7 @@ controller::controller
 (
   double iWheelRadius, double iTrackWidth,
   AccelStepper *iStepperL, AccelStepper *iStepperR,
-  uint32_t iStepsPerRev
+  uint32_t iStepsPerRev, uint32_t iTurnInterval
 ) 
 {
   wheelRadius = iWheelRadius;
@@ -14,9 +14,15 @@ controller::controller
   stepperL = iStepperL;
   stepperR = iStepperR;
   stepsPerRev = iStepsPerRev;
+  turnInterval = iTurnInterval;
 }
 
 void controller::init() {
+  //init steppers
+  stepperR->setPinsInverted(true);
+  stepperL->setMinPulseWidth(2);
+  stepperR->setMinPulseWidth(2);
+  //init values
   maxVx = 0;
   maxAx = 0;
   maxAngVx = 0;
