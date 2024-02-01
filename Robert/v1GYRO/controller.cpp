@@ -65,7 +65,7 @@ void controller::update() {
       if (micros() - oldus > turnInterval) {
         STATE = 0;
         stepperL->setCurrentPosition(stepperL->targetPosition());
-        stepperL->setCurrentPosition(stepperR->targetPosition());
+        stepperR->setCurrentPosition(stepperR->targetPosition());
       }
       stepperL->move(mmToSteps(-0.5*trackWidth*deltaTheta));
       stepperR->move(mmToSteps(0.5*trackWidth*deltaTheta));
@@ -76,24 +76,25 @@ void controller::update() {
     case 3:
       stepperL->run();
       stepperR->run();
-      if (!(stepperL->isRunning()) && !(stepperR->isRunning()) {
+      if (!(stepperL->isRunning()) && !(stepperR->isRunning())) {
         STATE = 2;
       }
       if (micros() - oldus > turnInterval) {
         STATE = 0;
         stepperL->setCurrentPosition(stepperL->targetPosition());
-        stepperL->setCurrentPosition(stepperR->targetPosition());
+        stepperR->setCurrentPosition(stepperR->targetPosition());
       }
       break;
+      
     default:
       STATE = 0;
       break;
   }
 }
 
-void updateTheta() {
+void controller::updateTheta() {
   if (micros() - oldIMUus > intervalIMUus) {
-    double angVel = (BMI160.getRotationZ() * 250.0) / 32768.0;
+    double angVel = ((BMI160.getRotationZ() * 250.0) / 32768.0) * PI/180;
     double interval = micros() - oldIMUus;
     theta += angVel*(interval/pow(10, 6));
     while (theta > PI) {
@@ -165,6 +166,10 @@ double controller::getMaxAx() {
 
 double controller::getMaxAngVx() {
   return maxAngVx;
+}
+
+double controller::getTheta() {
+  return theta;
 }
 
 int controller::getState() {

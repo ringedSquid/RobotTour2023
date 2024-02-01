@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include <AccelStepper.h>
-
+#include <BMI160Gen.h>
 
 class controller {
   private:
@@ -21,10 +21,8 @@ class controller {
     uint32_t oldus;
     uint32_t oldIMUus;
     uint32_t intervalIMUus;
-
-    void updateTheta();
     
-    double theta;
+    volatile double theta;
     double targetTheta;
     
     AccelStepper *stepperL;
@@ -42,7 +40,7 @@ class controller {
       double iWheelRadius, double iTrackWidth,
       AccelStepper *iStepperL, AccelStepper *iStepperR,
       uint32_t iStepsPerRev, uint32_t iTurnInterval,
-      uint32_t iIntervalIMUus,
+      uint32_t iIntervalIMUussd
     );
 
     void init(double iTheta);
@@ -56,10 +54,13 @@ class controller {
     //Motion profiled
     void moveX(double dist);
     void setTheta(double newTheta);
+    void updateTheta();
 
     double getMaxVx();
     double getMaxAx();
     double getMaxAngVx();
+
+    double getTheta();
 
     int getState();
 

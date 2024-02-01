@@ -31,7 +31,7 @@
 
 //BMI160 IMU
 #define IMU_ADDRESS 0x68
-#define IMU_UPDATE_US 0
+#define IMU_UPDATE_US 10*pow(10, 3)
 
 //Robot physical dimensions
 //in mm
@@ -42,7 +42,7 @@
 //Controller tuning values
 #define MAX_ACCEL 200
 #define MAX_ANG_VEL 200
-#define TURN_US 1000*pow(10, 3)
+#define TURN_US 5000*pow(10, 3)
 
 
 //PATH INFO

@@ -82,16 +82,30 @@ void setup() {
 
   //gyro init
   BMI160.begin(BMI160GenClass::I2C_MODE, Wire, IMU_ADDRESS);
+  BMI160.autoCalibrateGyroOffset();
 
   //oled init
   oled.begin(&Adafruit128x32, I2C_ADDRESS, OLED_RST);
+  oled.set2X();
   oled.setFont(Adafruit5x7);
   oled.clear();
 
   STATE = IDLE;
 
   robotController.init();
-  robotController.setTheta(PI/2);
+
+  robotController.setMaxAx(MAX_ACCEL);
+  robotController.setMaxVx(80*PI);
+  robotController.setMaxAngVx(MAX_ANG_VEL);
+  
+  delay(1000);
+  //robotController.moveX(300);
+  robotController.setTheta(PI);
+  while (robotController.getState() != 0) {
+      robotController.update();
+  }
+  robotController.setTheta(0);
+  
   /*
   //load Paths
   if (!loadPathFromSD(SD)) {
@@ -139,8 +153,15 @@ void setup() {
   Robot.startPath();
   */
 }
-
+double oldt = micros();
 void loop() {
+  /*
+  if (micros() - oldt > 500*pow(10, 3)) {
+    oldt = micros();
+    oled.clear();
+    oled.print(robotController.getTheta());
+  }
+  */
   robotController.update();
   /*
   Robot.update();
