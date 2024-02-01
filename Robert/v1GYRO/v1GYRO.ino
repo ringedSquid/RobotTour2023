@@ -4,9 +4,21 @@
 #include "simplePursuit.h"
 #include "robot.h"
 
+#include <ArduinoEigenDense.h>
+using namespace Eigen;
+
+#include "SD.h"
+#include "FS.h"
+#include "SPI.h"
+
+#include <BMI160Gen.h>
+
 #include <Wire.h>
 #include "SSD1306Ascii.h"
 #include "SSD1306AsciiWire.h"
+
+Vector2d PATH[100]; //= {Vector2d(0, 0), Vector2d(0, 300), Vector2d(300, 300), Vector2d(300, 0), Vector2d(0, 0)};
+uint8_t PATH_SIZE;
 
 SSD1306AsciiWire oled;
 
@@ -20,12 +32,9 @@ controller robotController
   STEPS_PER_REV, TURN_US
 ); 
 
-Vector2d path[] = {Vector2d(0, 0), Vector2d(0, 300), Vector2d(300, 300), Vector2d(300, 0), Vector2d(0, 0)};
-
 simplePursuit robotSimplePursuit 
 (
-  path, 5,
-  10, 0
+  TURN_US
 );
 
 robot Robot 
@@ -35,7 +44,76 @@ robot Robot
   0
 );
 
-
+boolean loadPathFromSD(fs::FS &fs) {
+  File file = fs.open(PATH_FILE);
+  if (!file) {
+    return false;
+  }
+  PATH_SIZE = 0;
+  char buff[2];
+  while (file.available()) {
+    buff[0] = file.read();
+    buff[1] = file.read();
+    //coords
+    double pX, pY;
+    if (buff[0] != 'E') {
+      switch (buff[0]) {
+        case 'A':
+          pX = 250;
+          break;
+        case 'B':
+          pX = 750;
+          break;
+        case 'C':
+          pX = 1250;
+          break;
+        case 'D':
+          pX = 1750;
+          break;
+        default:
+          return false;
+      }
+      switch (buff[1]) {
+        case 1:
+          pY = 250;
+          break;
+        case 2:
+          pY = 750;
+          break;
+        case 3:
+          pY = 1250;
+          break;
+        case 4:
+          pY = 1750;
+          break;
+        default:
+          return false;
+      }
+    }
+    else {
+      pY = -DIST_TO_DOWEL;
+      switch (buff[1]) {
+        case 'A':
+          pX = 250;
+          break;
+        case 'B':
+          pX = 750;
+          break;
+        case 'C':
+          pX = 1250;
+          break;
+        case 'D':
+          pX = 1750;
+          break;
+        default:
+          return false;
+      }
+    }
+    PATH[PATH_SIZE] = Vector2d(pX, pY);
+    PATH_SIZE++;
+    file.read();
+  }
+}
 
 void setup() {
   //init pins
@@ -52,6 +130,12 @@ void setup() {
 
   pinMode(LED_0, OUTPUT);
   pinMode(LED_1, OUTPUT);
+
+  //SD begin
+  SD.begin(SD_CS);
+
+  //gyro init
+  BMI160.begin(BMI160GenClass::I2C_MODE, Wire, IMU_ADDRESS);
 
   //oled init
   oled.begin(&Adafruit128x32, I2C_ADDRESS, OLED_RST);

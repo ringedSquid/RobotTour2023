@@ -17,7 +17,6 @@ robot::robot
 }
 
 void robot::init() {
-  robotSimplePursuit->init();
   robotController->init(PI/2);
   robotController->setMaxAx(maxAx);
   robotController->setMaxAngVx(maxAngVx);

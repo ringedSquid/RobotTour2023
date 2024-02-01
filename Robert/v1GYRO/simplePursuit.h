@@ -28,12 +28,9 @@ class simplePursuit {
     double getDist(Vector2d p1, Vector2d p2);
     
   public:
-    simplePursuit(
-      Vector2d *iPath, uint8_t iPathSize,
-      double iTargetTime, uint32_t iTurnInterval
-    );
+    simplePursuit(uint32_t iTurnInterval);
     
-    void init();
+    void init(Vector2d *iPath, uint8_t iPathSize, double iTargetTime);
 
     //get index of path
     uint8_t getPathIndexCount();

@@ -29,12 +29,19 @@
 //oled
 #define I2C_ADDRESS 0x3C
 
+//BMI160 IMU
+#define IMU_ADDRESS 0x68
+
 //Robot physical dimensions
 //in mm
 #define WHEEL_RADIUS 40.46732
 #define TRACK_WIDTH 146.5
+#define DIST_TO_DOWEL 0
 
 //Controller tuning values
 #define MAX_ACCEL 200
 #define MAX_ANG_VEL 200
 #define TURN_US 1000*pow(10, 3)
+
+//PATH INFO
+#define PATH_FILE "/test.txt"

@@ -4,15 +4,7 @@ using namespace Eigen;
 
 #include "simplePursuit.h"
 
-simplePursuit::simplePursuit
-(
-  Vector2d *iPath, uint8_t iPathSize,
-  double iTargetTime, uint32_t iTurnInterval
-)
-{
-  path = iPath;
-  pathSize = iPathSize;
-  targetTime = iTargetTime;
+simplePursuit::simplePursuit(uint32_t iTurnInterval) {
   turnInterval = iTurnInterval;
 }
 
@@ -20,7 +12,11 @@ double simplePursuit::getDist(Vector2d p1, Vector2d p2) {
   return sqrt(pow((p2(0)-p1(0)), 2) + pow((p2(1)-p1(1)), 2));
 }
 
-void simplePursuit::init() {
+void simplePursuit::init(Vector2d *iPath, uint8_t iPathSize, double iTargetTime) {
+  path = iPath;
+  pathSize = iPathSize;
+  targetTime = iTargetTime;
+  
   prevPointIndex = 0;
   currentGoalPointIndex = 1;
 
