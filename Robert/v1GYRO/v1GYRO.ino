@@ -32,7 +32,8 @@ controller robotController
 (
   WHEEL_RADIUS, TRACK_WIDTH,
   &stepperL, &stepperR,
-  STEPS_PER_REV, TURN_US
+  STEPS_PER_REV, TURN_US,
+  IMU_UPDATE_US
 ); 
 
 simplePursuit robotSimplePursuit(TURN_US);
@@ -88,7 +89,10 @@ void setup() {
   oled.clear();
 
   STATE = IDLE;
-  
+
+  robotController.init();
+  robotController.setTheta(PI/2);
+  /*
   //load Paths
   if (!loadPathFromSD(SD)) {
     STATE = ERROR;
@@ -98,6 +102,7 @@ void setup() {
   
 
   delay(1000);
+  */
   /*
   //Invert direction
   stepperR.setPinsInverted(true);
@@ -136,6 +141,7 @@ void setup() {
 }
 
 void loop() {
+  robotController.update();
   /*
   Robot.update();
   */

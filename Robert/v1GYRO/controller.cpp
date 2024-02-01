@@ -7,7 +7,8 @@ controller::controller
 (
   double iWheelRadius, double iTrackWidth,
   AccelStepper *iStepperL, AccelStepper *iStepperR,
-  uint32_t iStepsPerRev, uint32_t iTurnInterval
+  uint32_t iStepsPerRev, uint32_t iTurnInterval,
+  uint32_t iIntervalIMUus
 ) 
 {
   wheelRadius = iWheelRadius;
@@ -16,11 +17,13 @@ controller::controller
   stepperR = iStepperR;
   stepsPerRev = iStepsPerRev;
   turnInterval = iTurnInterval;
+  intervalIMUus = iIntervalIMUus;
 }
 
 void controller::init(double iTheta) {
   init();
   theta = iTheta;
+  targetTheta = theta;
 }
 
 void controller::init() {
@@ -33,14 +36,19 @@ void controller::init() {
   maxAx = 0;
   maxAngVx = 0;
   oldus = micros();
+  oldIMUus = micros();
   STATE = 0;
   theta = 0;
+  targetTheta = 0;
 }
 
 void controller::update() {
+  updateTheta();
+  double deltaTheta = targetTheta - theta;
   switch (STATE) {
     case 0:
       break;
+      
     case 1:
       stepperL->run();
       stepperR->run();
@@ -48,9 +56,53 @@ void controller::update() {
         STATE = 0;
       }
       break;
+    //deciding turn
+    
+    case 2:
+      if (abs(deltaTheta) > PI) {
+         deltaTheta -= TWO_PI;
+      }
+      if (micros() - oldus > turnInterval) {
+        STATE = 0;
+        stepperL->setCurrentPosition(stepperL->targetPosition());
+        stepperL->setCurrentPosition(stepperR->targetPosition());
+      }
+      stepperL->move(mmToSteps(-0.5*trackWidth*deltaTheta));
+      stepperR->move(mmToSteps(0.5*trackWidth*deltaTheta));
+      STATE = 3;
+      break;
+        
+    //actually turning
+    case 3:
+      stepperL->run();
+      stepperR->run();
+      if (!(stepperL->isRunning()) && !(stepperR->isRunning()) {
+        STATE = 2;
+      }
+      if (micros() - oldus > turnInterval) {
+        STATE = 0;
+        stepperL->setCurrentPosition(stepperL->targetPosition());
+        stepperL->setCurrentPosition(stepperR->targetPosition());
+      }
+      break;
     default:
       STATE = 0;
       break;
+  }
+}
+
+void updateTheta() {
+  if (micros() - oldIMUus > intervalIMUus) {
+    double angVel = (BMI160.getRotationZ() * 250.0) / 32768.0;
+    double interval = micros() - oldIMUus;
+    theta += angVel*(interval/pow(10, 6));
+    while (theta > PI) {
+      theta -= TWO_PI;
+    }
+    while (theta < -PI) {
+      theta += TWO_PI;
+    }
+    oldIMUus = micros();
   }
 }
 
@@ -91,10 +143,6 @@ void controller::moveX(double dist) {
 
 void controller::setTheta(double newTheta) {
   //set accel and vel
-  double deltaTheta = newTheta - theta;
-  if (abs(deltaTheta) > PI) {
-    deltaTheta -= TWO_PI;
-  }
   stepperL->setAcceleration(mmToSteps(maxAx));
   stepperR->setAcceleration(mmToSteps(maxAx));
   stepperL->setMaxSpeed(mmToSteps(maxAngVx));
@@ -102,10 +150,9 @@ void controller::setTheta(double newTheta) {
   stepperL->setSpeed(mmToSteps(maxAngVx));
   stepperR->setSpeed(mmToSteps(maxAngVx));
   //set wheel positions
-  stepperL->move(mmToSteps(-0.5*trackWidth*deltaTheta));
-  stepperR->move(mmToSteps(0.5*trackWidth*deltaTheta));
-  theta = newTheta;
-  STATE = 1;
+  targetTheta = newTheta;
+  STATE = 2;
+  oldus = micros();
 }
 
 double controller::getMaxVx() {

@@ -102,3 +102,7 @@ double SimplePursuit::getTheta() {
 double SimplePursuit::getPathDist() {
   return pathDist;
 }
+
+boolean SimplePursuit::atTerminal() {
+  return (goalPointIndex >= pathLength-1);
+}

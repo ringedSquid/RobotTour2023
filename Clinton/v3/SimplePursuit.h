@@ -40,7 +40,9 @@ class SimplePursuit {
     
     boolean nextPoint();
     boolean atPoint();
-
+    //
+    boolean atTerminal();
+    
     double getDistToGoalPoint();
 
     //Time remaining, distance remaining

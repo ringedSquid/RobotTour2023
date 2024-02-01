@@ -56,7 +56,7 @@
 
 //ROBOT TUNING VALUES
 #define TURN_INTERVAL_US 1500*pow(10, 3)
-#define CENTER_TO_DOWEL 80.0 //mm
+#define CENTER_TO_DOWEL 0.0 //mm
 #define END_DISTANCE 10.0 //mm
 
 //IMU TUNING VALUES

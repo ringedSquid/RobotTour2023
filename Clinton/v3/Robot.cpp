@@ -108,5 +108,5 @@ void Robot::stopPath() {
 bool Robot::isNearTarget() {
   double dowelPointX = odometry->getX()+centerToDowel*cos(odometry->getTheta());
   double dowelPointY = odometry->getY()+centerToDowel*sin(odometry->getTheta());
-  return (simplePursuit->getDist(Vector2d(dowelPointX, dowelPointY), simplePursuit->getEndPoint()) <= endDistance);
+  return (simplePursuit->atTerminal() && (simplePursuit->getDist(Vector2d(dowelPointX, dowelPointY), simplePursuit->getEndPoint()) <= endDistance));
 }

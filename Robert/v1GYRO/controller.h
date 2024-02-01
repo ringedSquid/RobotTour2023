@@ -19,9 +19,13 @@ class controller {
     double maxAngVx;
     
     uint32_t oldus;
+    uint32_t oldIMUus;
+    uint32_t intervalIMUus;
 
+    void updateTheta();
+    
     double theta;
-
+    double targetTheta;
     
     AccelStepper *stepperL;
     AccelStepper *stepperR;
@@ -37,7 +41,8 @@ class controller {
     controller(
       double iWheelRadius, double iTrackWidth,
       AccelStepper *iStepperL, AccelStepper *iStepperR,
-      uint32_t iStepsPerRev, uint32_t iTurnInterval
+      uint32_t iStepsPerRev, uint32_t iTurnInterval,
+      uint32_t iIntervalIMUus,
     );
 
     void init(double iTheta);
