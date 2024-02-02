@@ -33,7 +33,9 @@ class robot {
     void init();
     void update();
     void startPath();
-    void stopPath();
+    double stopPath();
+
+    uint8_t getState();
 
 };
 

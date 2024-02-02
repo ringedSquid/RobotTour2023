@@ -17,11 +17,22 @@ using namespace Eigen;
 #include "SSD1306Ascii.h"
 #include "SSD1306AsciiWire.h"
 
+//FSM State
 int STATE;
 
+//Path globals
 Vector2d PATH[100]; //= {Vector2d(0, 0), Vector2d(0, 300), Vector2d(300, 300), Vector2d(300, 0), Vector2d(0, 0)};
 uint8_t PATH_SIZE;
 double TARGET_TIME;
+double FINAL_OFFSET;
+
+//SD Methods
+boolean loadPathFromSD(fs::FS &fs); 
+
+//Button related
+uint8_t BTN_PINS[] = {BTN_0, BTN_1};
+bool BTN_PREV_STATES[] = {LOW, LOW};
+bool BTN_STATE(uint8_t index);
 
 SSD1306AsciiWire oled;
 
@@ -45,23 +56,10 @@ robot Robot
   0
 );
 
-
-/*
- * FILE FORMAT
- * 
- * TARGET TIME:
- * 50.00
- * PATH:
- * A1
- * B2
- * ...
- */
-
-boolean loadPathFromSD(fs::FS &fs);
-
 void setup() {
+  //start init
   STATE = INIT;
- 
+  
   Serial.begin(115200);
 
   Wire.begin();
@@ -77,117 +75,200 @@ void setup() {
   pinMode(LED_0, OUTPUT);
   pinMode(LED_1, OUTPUT);
 
-  //SD begin
-  SD.begin(SD_CS);
-
-  //gyro init
-  BMI160.begin(BMI160GenClass::I2C_MODE, Wire, IMU_ADDRESS);
-  BMI160.autoCalibrateGyroOffset();
-
   //oled init
   oled.begin(&Adafruit128x32, I2C_ADDRESS, OLED_RST);
   oled.set2X();
   oled.setFont(Adafruit5x7);
   oled.clear();
+  oled.println("INIT...");
+  oled.set1X();
+  oled.print("DO NOT MOVE ROBOT!");
 
-  STATE = IDLE;
-
-  robotController.init();
-
-  robotController.setMaxAx(MAX_ACCEL);
-  robotController.setMaxVx(80*PI);
-  robotController.setMaxAngVx(MAX_ANG_VEL);
-  
   delay(1000);
-  //robotController.moveX(300);
-  robotController.setTheta(PI);
-  while (robotController.getState() != 0) {
-      robotController.update();
-  }
-  robotController.setTheta(0);
   
-  /*
+  //gyro init
+  if (!BMI160.begin(BMI160GenClass::I2C_MODE, Wire, IMU_ADDRESS)) {
+    STATE = IMU_ERROR;
+  }
+  BMI160.autoCalibrateGyroOffset();
+
+  //SD begin
+  if (SD.begin(SD_CS) == 0) {
+    STATE = SD_ERROR;
+    oled.clear();
+    oled.set2X();
+    oled.println("SD ERROR");
+    oled.set1X();
+    oled.print("Check if SD card inserted");
+    
+  }
+  
   //load Paths
   if (!loadPathFromSD(SD)) {
-    STATE = ERROR;
-  }
-
-  robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME);
-  
-
-  delay(1000);
-  */
-  /*
-  //Invert direction
-  stepperR.setPinsInverted(true);
-  stepperL.setMinPulseWidth(2);
-  stepperR.setMinPulseWidth(2);
-  */
-  /*
-  
-  robotController.init();
-  
-  robotController.setMaxAx(MAX_ACCEL);
-  robotController.setMaxVx(80*PI);
-  robotController.setMaxAngVx(40*PI);
-
-  delay(5000);
-
-  for (int i=0; i<4; i++) {
-    robotController.moveX(200);
-    while (robotController.getState() == 1) {
-      robotController.update();
-    }
-    delay(100);
-    robotController.turn(PI/2);
-    while (robotController.getState() == 1) {
-      robotController.update();
-    }
-    delay(100);
-  }
-  oled.set2X();
-  oled.print(stepperR.currentPosition());
-  */
-  /*
-  Robot.init();
-  Robot.startPath();
-  */
-}
-double oldt = micros();
-void loop() {
-  /*
-  if (micros() - oldt > 500*pow(10, 3)) {
-    oldt = micros();
+    STATE = FILE_ERROR;
     oled.clear();
-    oled.print(robotController.getTheta());
+    oled.set2X();
+    oled.println("FILE ERROR");
+    oled.set1X();
+    oled.print("Check path file for errors");
   }
-  */
-  robotController.update();
-  /*
-  Robot.update();
-  */
+
+  if (STATE == INIT) {
+    STATE = IDLE;
+    oled.clear();
+    oled.set2X();
+    oled.println("IDLE");
+  }
+}
+
+void loop() {
+  switch (STATE) {
+    case INIT:
+      break;
+    case IDLE:
+      if (BTN_STATE(1)) {
+        Robot.init();
+        robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME);
+        STATE = READY;
+        oled.clear();
+        oled.set2X();
+        oled.println("READY");
+        oled.print("target_t: "); oled.print(TARGET_TIME);
+      }
+      break;
+      
+    case READY:
+      Robot.update();
+      if (BTN_STATE(1)) {
+        Robot.init();
+        STATE = READY;
+        oled.clear();
+        oled.set2X();
+        oled.println("READY");
+        oled.print("target_t: "); oled.print(TARGET_TIME);
+      }
+      if (BTN_STATE(0)) {
+        Robot.startPath();
+        STATE = RUNNING;
+        oled.clear();
+        oled.set2X();
+        oled.println("RUNNING");
+      }
+      break;
+       
+    case RUNNING:
+      Robot.update();
+      if (BTN_STATE(1)) {
+        STATE = STOPPED;
+        oled.clear();
+        oled.set2X();
+        oled.println("STOPPED");
+        oled.set1X();
+        oled.print("current_t: "); oled.print(Robot.stopPath());
+      }
+      if (Robot.getState() == 0) {
+        STATE = END_RUN;
+        oled.clear();
+        oled.set2X();
+        oled.println("RUN ENDED");
+        oled.set1X();
+        oled.print("elapsed_t: "); oled.print(Robot.stopPath());
+      }
+      break;
+      
+    case END_RUN:
+      if (BTN_STATE(1)) {
+        STATE = IDLE;
+        oled.clear();
+        oled.set2X();
+        oled.println("IDLE");
+      }
+      if (BTN_STATE(0)) {
+        Robot.init();
+        robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME);
+        STATE = READY;
+        oled.clear();
+        oled.set2X();
+        oled.println("READY");
+        oled.print("target_t: "); oled.print(TARGET_TIME);
+      }
+      break;
+      
+    case STOPPED:
+      if (BTN_STATE(1)) {
+        STATE = IDLE;
+        oled.clear();
+        oled.set2X();
+        oled.println("IDLE");
+      }
+      if (BTN_STATE(0)) {
+        Robot.init();
+        robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME);
+        STATE = READY;
+        oled.clear();
+        oled.set2X();
+        oled.println("READY");
+        oled.print("target_t: "); oled.print(TARGET_TIME);
+      }
+      break;
+      
+    case ERROR:
+      break;
+    case SD_ERROR:
+      break;
+    case FILE_ERROR:
+      break;
+    case IMU_ERROR:
+      break;
+    default:
+      STATE = IDLE;
+  }
 }
 
 boolean loadPathFromSD(fs::FS &fs) {
+  /*
+   * FILE FORMAT
+   * 
+   * TARGET TIME:
+   * 50.00
+   * PATH:
+   * A1
+   * B2
+   * ...
+   */
   File file = fs.open(PATH_FILE);
   if (!file) {
     return false;
   }
   PATH_SIZE = 0;
   char buff[5];
-  //read in the target time
+  
+  //read in the final offset
+  
   //skip first line until newline is reached
   while (file.available()) {
     if (file.read() == '\n') {
       break;
     }
   }
-  for (int i=0; i<4; i++) {
+  for (int i=0; i<5; i++) {
+    buff[i] = file.read();
+  }
+  FINAL_OFFSET = atof(buff);
+  file.read();
+
+  //read in target time
+
+  //skip first line until newline is reached
+  while (file.available()) {
+    if (file.read() == '\n') {
+      break;
+    }
+  }
+  for (int i=0; i<5; i++) {
     buff[i] = file.read();
   }
   TARGET_TIME = atof(buff);
-  
-  //skip to next line
   file.read();
   
   //skip line
@@ -261,4 +342,15 @@ boolean loadPathFromSD(fs::FS &fs) {
     file.read();
   }
   return true;
+}
+
+bool BTN_STATE(uint8_t index) {
+  bool buttonstate = digitalRead(BTN_PINS[index]);
+  if (buttonstate != BTN_PREV_STATES[index]) {
+    BTN_PREV_STATES[index] = buttonstate;
+    if (buttonstate == HIGH) {
+      return true;
+    }
+  }
+  return false;
 }

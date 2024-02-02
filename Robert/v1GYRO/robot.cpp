@@ -79,6 +79,11 @@ void robot::startPath() {
   start_us = micros();
 }
 
-void robot::stopPath() {
+double robot::stopPath() {
   STATE = 0;
+  return (micros() - start_us)/pow(10, 6);
+}
+
+uint8_t robot::getState() {
+  return STATE;
 }

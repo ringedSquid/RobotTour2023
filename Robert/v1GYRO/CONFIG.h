@@ -46,10 +46,9 @@
 
 
 //PATH INFO
-#define PATH_FILE "/test.txt"
+#define PATH_FILE "/path.txt"
 
 //STATE DEFINITIONS
-#define CALIBRATE -2
 #define INIT -1
 #define IDLE 0
 #define READY 1
@@ -57,3 +56,6 @@
 #define END_RUN 3
 #define STOPPED 4
 #define ERROR 5
+#define SD_ERROR 6
+#define FILE_ERROR 7
+#define IMU_ERROR 8
