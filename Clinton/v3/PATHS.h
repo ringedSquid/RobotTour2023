@@ -20,7 +20,7 @@
 #define P_D2 Vector2d(1250, 1750)
 #define P_D3 Vector2d(1750, 1750)
 
-#define EDGE_A0 Vector2d(250, -CENTER_TO_DOWEL)
-#define EDGE_B0 Vector2d(750, -CENTER_TO_DOWEL)
-#define EDGE_C0 Vector2d(1250, -CENTER_TO_DOWEL)
-#define EDGE_D0 Vector2d(1750, -CENTER_TO_DOWEL)
+#define EDGE_0 Vector2d(250, -CENTER_TO_DOWEL)
+#define EDGE_1 Vector2d(750, -CENTER_TO_DOWEL)
+#define EDGE_2 Vector2d(1250, -CENTER_TO_DOWEL)
+#define EDGE_3 Vector2d(1750, -CENTER_TO_DOWEL)
