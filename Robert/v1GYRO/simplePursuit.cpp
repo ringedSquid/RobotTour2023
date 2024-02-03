@@ -26,7 +26,7 @@ void simplePursuit::init(Vector2d *iPath, uint8_t iPathSize, double iTargetTime)
   for (uint8_t i=1; i<pathSize; i++) {
     pathTotalDist += getDist(path[i], path[i-1]);
   }
-  avgVx = pathTotalDist/(targetTime - turnInterval/pow(10,6)*pathSize);
+  avgVx = (pathTotalDist-85)/(targetTime - (turnInterval/pow(10,6))*(pathSize-2));
 }
 
 uint8_t simplePursuit::getPathIndexCount() {

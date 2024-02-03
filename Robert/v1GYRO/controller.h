@@ -55,6 +55,7 @@ class controller {
     void moveX(double dist);
     void setTheta(double newTheta);
     void updateTheta();
+    void initTheta(double newTheta);
 
     double getMaxVx();
     double getMaxAx();

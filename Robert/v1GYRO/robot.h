@@ -19,6 +19,7 @@ class robot {
 
     //getting distance from end point
     double centerToDowel;
+    double finalOffset;
 
     double maxAx;
     double maxAngVx;
@@ -31,6 +32,7 @@ class robot {
       );
       
     void init();
+    void init(double iFinalOffset);
     void update();
     void startPath();
     double stopPath();

@@ -59,8 +59,11 @@ void controller::update() {
     //deciding turn
     
     case 2:
-      if (abs(deltaTheta) > PI) {
+      if (deltaTheta > PI) {
          deltaTheta -= TWO_PI;
+      }
+      else if (deltaTheta < -PI) {
+        deltaTheta += TWO_PI;
       }
       if (micros() - oldus > turnInterval) {
         STATE = 0;
@@ -170,6 +173,11 @@ double controller::getMaxAngVx() {
 
 double controller::getTheta() {
   return theta;
+}
+
+void controller::initTheta(double newTheta) {
+  //theta = newTheta;
+  return;
 }
 
 int controller::getState() {

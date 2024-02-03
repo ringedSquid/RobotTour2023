@@ -20,7 +20,13 @@ void robot::init() {
   robotController->init(PI/2);
   robotController->setMaxAx(maxAx);
   robotController->setMaxAngVx(maxAngVx);
+  finalOffset = 0;
   STATE = 0;
+}
+
+void robot::init(double iFinalOffset) {
+  init();
+  finalOffset = iFinalOffset;
 }
 
 void robot::update() {
@@ -35,8 +41,10 @@ void robot::update() {
       dist = robotSimplePursuit->getCurrentGoalPointDist();
       if (robotSimplePursuit->atLastPoint()) {
         dist -= centerToDowel;
+        dist += finalOffset;
       }
-      vx = (2*robotController->mmToSteps(dist)*robotSimplePursuit->getAvgVx());
+      //vx = robotSimplePursuit->getAvgVx();
+      vx = (1*robotController->mmToSteps(dist)*robotSimplePursuit->getAvgVx());
       vx = vx / (robotController->mmToSteps(dist) + 2*(robotController->mmToSteps(dist)/maxAx));
       robotController->setMaxVx(vx);
       robotController->moveX(dist);

@@ -53,7 +53,7 @@ robot Robot
 (
   &robotSimplePursuit, &robotController,
   MAX_ACCEL, MAX_ANG_VEL,
-  0
+  DIST_TO_DOWEL
 );
 
 void setup() {
@@ -99,7 +99,7 @@ void setup() {
     oled.set2X();
     oled.println("SD ERROR");
     oled.set1X();
-    oled.print("Check if SD card inserted");
+    oled.print("Check connections");
     
   }
   
@@ -110,7 +110,8 @@ void setup() {
     oled.set2X();
     oled.println("FILE ERROR");
     oled.set1X();
-    oled.print("Check path file for errors");
+    oled.println("NO CARD or");
+    oled.println("BAD FILE");
   }
 
   if (STATE == INIT) {
@@ -127,24 +128,26 @@ void loop() {
       break;
     case IDLE:
       if (BTN_STATE(1)) {
-        Robot.init();
+        Robot.init(FINAL_OFFSET);
         robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME);
         STATE = READY;
         oled.clear();
         oled.set2X();
         oled.println("READY");
+        oled.set1X();
         oled.print("target_t: "); oled.print(TARGET_TIME);
       }
       break;
       
     case READY:
-      Robot.update();
+      //Robot.update();
       if (BTN_STATE(1)) {
-        Robot.init();
+        Robot.init(FINAL_OFFSET);
         STATE = READY;
         oled.clear();
         oled.set2X();
         oled.println("READY");
+        oled.set1X();
         oled.print("target_t: "); oled.print(TARGET_TIME);
       }
       if (BTN_STATE(0)) {
@@ -153,6 +156,7 @@ void loop() {
         oled.clear();
         oled.set2X();
         oled.println("RUNNING");
+        robotController.initTheta(PI/2);
       }
       break;
        
@@ -184,12 +188,13 @@ void loop() {
         oled.println("IDLE");
       }
       if (BTN_STATE(0)) {
-        Robot.init();
+        Robot.init(FINAL_OFFSET);
         robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME);
         STATE = READY;
         oled.clear();
         oled.set2X();
         oled.println("READY");
+        oled.set1X();
         oled.print("target_t: "); oled.print(TARGET_TIME);
       }
       break;
@@ -202,12 +207,13 @@ void loop() {
         oled.println("IDLE");
       }
       if (BTN_STATE(0)) {
-        Robot.init();
+        Robot.init(FINAL_OFFSET);
         robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME);
         STATE = READY;
         oled.clear();
         oled.set2X();
         oled.println("READY");
+        oled.set1X();
         oled.print("target_t: "); oled.print(TARGET_TIME);
       }
       break;
@@ -302,16 +308,16 @@ boolean loadPathFromSD(fs::FS &fs) {
           return false;
       }
       switch (buff[1]) {
-        case 1:
+        case '1':
           pY = 250;
           break;
-        case 2:
+        case '2':
           pY = 750;
           break;
-        case 3:
+        case '3':
           pY = 1250;
           break;
-        case 4:
+        case '4':
           pY = 1750;
           break;
         default:
@@ -339,7 +345,11 @@ boolean loadPathFromSD(fs::FS &fs) {
     }
     PATH[PATH_SIZE] = Vector2d(pX, pY);
     PATH_SIZE++;
-    file.read();
+    while (file.available()) {
+      if (file.read() == '\n') {
+        break;
+      }
+    }
   }
   return true;
 }

@@ -1,8 +1,8 @@
 //Hardware connections
 
 //Buttons for input
-#define BTN_0 0
-#define BTN_1 0
+#define BTN_0 34
+#define BTN_1 35
 
 //Motors
 #define STEP_L 26
@@ -37,12 +37,12 @@
 //in mm
 #define WHEEL_RADIUS 40.46732
 #define TRACK_WIDTH 146.5
-#define DIST_TO_DOWEL 0
+#define DIST_TO_DOWEL 85
 
 //Controller tuning values
-#define MAX_ACCEL 200
-#define MAX_ANG_VEL 200
-#define TURN_US 5000*pow(10, 3)
+#define MAX_ACCEL 400
+#define MAX_ANG_VEL 800
+#define TURN_US 2500*pow(10, 3)
 
 
 //PATH INFO
