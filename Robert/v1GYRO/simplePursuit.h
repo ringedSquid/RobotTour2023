@@ -9,6 +9,9 @@ using namespace Eigen;
 
 class simplePursuit {
   private:
+    double centerToDowel;
+    double finalOffset;
+    
     Vector2d *path;
 
     uint8_t pathSize;
@@ -28,9 +31,9 @@ class simplePursuit {
     double getDist(Vector2d p1, Vector2d p2);
     
   public:
-    simplePursuit(uint32_t iTurnInterval);
+    simplePursuit(double iCenterToDowel, uint32_t iTurnInterval);
     
-    void init(Vector2d *iPath, uint8_t iPathSize, double iTargetTime);
+    void init(Vector2d *iPath, uint8_t iPathSize, double iTargetTime, double iFinalOffset);
 
     //get index of path
     uint8_t getPathIndexCount();

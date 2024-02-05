@@ -1,3 +1,6 @@
+#include <mutex>
+
+
 #include "CONFIG.h"
 #include <AccelStepper.h>
 #include "controller.h"
@@ -27,7 +30,7 @@ double TARGET_TIME;
 double FINAL_OFFSET;
 
 //SD Methods
-boolean loadPathFromSD(fs::FS &fs); 
+boolean loadPathFromSD(fs::FS &fs);
 
 //Button related
 uint8_t BTN_PINS[] = {BTN_0, BTN_1};
@@ -39,17 +42,25 @@ SSD1306AsciiWire oled;
 AccelStepper stepperL(AccelStepper::DRIVER, STEP_L, DIR_L);
 AccelStepper stepperR(AccelStepper::DRIVER, STEP_R, DIR_R);
 
+//Mutexes for stepper instances
+std::mutex steppersEngaged_mtx;
+
+//Multicore tasks for engaging steppers
+void engageSteppers(void * parameter);
+TaskHandle_t engageSteppersHandle = NULL;
+
 controller robotController
 (
   WHEEL_RADIUS, TRACK_WIDTH,
   &stepperL, &stepperR,
   STEPS_PER_REV, TURN_US,
-  IMU_UPDATE_US
-); 
+  IMU_UPDATE_US, &steppersEngaged_mtx,
+  &engageSteppers, &engageSteppersHandle
+);
 
-simplePursuit robotSimplePursuit(TURN_US);
+simplePursuit robotSimplePursuit(DIST_TO_DOWEL, TURN_US);
 
-robot Robot 
+robot Robot
 (
   &robotSimplePursuit, &robotController,
   MAX_ACCEL, MAX_ANG_VEL,
@@ -57,9 +68,12 @@ robot Robot
 );
 
 void setup() {
+  //for steppers
+  //xTaskCreate(engageSteppers, "engageSteppers Task", 10000, NULL, 1, &engageSteppersHandle);
+
   //start init
   STATE = INIT;
-  
+
   Serial.begin(115200);
 
   Wire.begin();
@@ -85,7 +99,7 @@ void setup() {
   oled.print("DO NOT MOVE ROBOT!");
 
   delay(1000);
-  
+
   //gyro init
   if (!BMI160.begin(BMI160GenClass::I2C_MODE, Wire, IMU_ADDRESS)) {
     STATE = IMU_ERROR;
@@ -100,9 +114,9 @@ void setup() {
     oled.println("SD ERROR");
     oled.set1X();
     oled.print("Check connections");
-    
+
   }
-  
+
   //load Paths
   if (!loadPathFromSD(SD)) {
     STATE = FILE_ERROR;
@@ -120,16 +134,40 @@ void setup() {
     oled.set2X();
     oled.println("IDLE");
   }
+
+  /*
+  double a = 300;
+  double v = 127;
+  double d = 400;
+  double offset = 0.6;
+  robotController.init();
+  robotController.setMaxAx(a);
+  robotController.setMaxAngVx(v);
+  robotController.setMaxVx(v + offset);
+  double expected_t = (d + (v * v / a)) / v;
+  oled.clear();
+  oled.set1X();
+  oled.println("START");
+  robotController.setTheta(PI/2);
+  delay(2);
+  uint32_t oldt = micros();
+  while (robotController.getState() != 0) {
+    robotController.update();
+  }
+  oled.println((micros() - oldt) / pow(10, 6));
+  oled.println(expected_t);
+  */
 }
 
 void loop() {
+  wdt_reset();
   switch (STATE) {
     case INIT:
       break;
     case IDLE:
       if (BTN_STATE(1)) {
         Robot.init(FINAL_OFFSET);
-        robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME);
+        robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME, FINAL_OFFSET);
         STATE = READY;
         oled.clear();
         oled.set2X();
@@ -138,7 +176,7 @@ void loop() {
         oled.print("target_t: "); oled.print(TARGET_TIME);
       }
       break;
-      
+
     case READY:
       //Robot.update();
       if (BTN_STATE(1)) {
@@ -159,7 +197,7 @@ void loop() {
         robotController.initTheta(PI/2);
       }
       break;
-       
+
     case RUNNING:
       Robot.update();
       if (BTN_STATE(1)) {
@@ -179,7 +217,7 @@ void loop() {
         oled.print("elapsed_t: "); oled.print(Robot.stopPath());
       }
       break;
-      
+
     case END_RUN:
       if (BTN_STATE(1)) {
         STATE = IDLE;
@@ -189,7 +227,7 @@ void loop() {
       }
       if (BTN_STATE(0)) {
         Robot.init(FINAL_OFFSET);
-        robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME);
+        robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME, FINAL_OFFSET);
         STATE = READY;
         oled.clear();
         oled.set2X();
@@ -198,7 +236,7 @@ void loop() {
         oled.print("target_t: "); oled.print(TARGET_TIME);
       }
       break;
-      
+
     case STOPPED:
       if (BTN_STATE(1)) {
         STATE = IDLE;
@@ -208,7 +246,7 @@ void loop() {
       }
       if (BTN_STATE(0)) {
         Robot.init(FINAL_OFFSET);
-        robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME);
+        robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME, FINAL_OFFSET);
         STATE = READY;
         oled.clear();
         oled.set2X();
@@ -217,7 +255,7 @@ void loop() {
         oled.print("target_t: "); oled.print(TARGET_TIME);
       }
       break;
-      
+
     case ERROR:
       break;
     case SD_ERROR:
@@ -228,36 +266,43 @@ void loop() {
       break;
     default:
       STATE = IDLE;
-  }
+    }
+}
+
+void engageSteppers(void * parameter) {
+  steppersEngaged_mtx.lock();
+  while (stepperL.run() && stepperR.run());
+  steppersEngaged_mtx.unlock();
+  vTaskDelete(NULL);
 }
 
 boolean loadPathFromSD(fs::FS &fs) {
   /*
-   * FILE FORMAT
-   * 
-   * TARGET TIME:
-   * 50.00
-   * PATH:
-   * A1
-   * B2
-   * ...
-   */
+     FILE FORMAT
+
+     TARGET TIME:
+     50.00
+     PATH:
+     A1
+     B2
+     ...
+  */
   File file = fs.open(PATH_FILE);
   if (!file) {
     return false;
   }
   PATH_SIZE = 0;
   char buff[5];
-  
+
   //read in the final offset
-  
+
   //skip first line until newline is reached
   while (file.available()) {
     if (file.read() == '\n') {
       break;
     }
   }
-  for (int i=0; i<5; i++) {
+  for (int i = 0; i < 5; i++) {
     buff[i] = file.read();
   }
   FINAL_OFFSET = atof(buff);
@@ -271,12 +316,12 @@ boolean loadPathFromSD(fs::FS &fs) {
       break;
     }
   }
-  for (int i=0; i<5; i++) {
+  for (int i = 0; i < 5; i++) {
     buff[i] = file.read();
   }
   TARGET_TIME = atof(buff);
   file.read();
-  
+
   //skip line
   while (file.available()) {
     if (file.read() == '\n') {

@@ -4,7 +4,8 @@ using namespace Eigen;
 
 #include "simplePursuit.h"
 
-simplePursuit::simplePursuit(uint32_t iTurnInterval) {
+simplePursuit::simplePursuit(double iCenterToDowel, uint32_t iTurnInterval) {
+  centerToDowel = iCenterToDowel;
   turnInterval = iTurnInterval;
 }
 
@@ -12,10 +13,11 @@ double simplePursuit::getDist(Vector2d p1, Vector2d p2) {
   return sqrt(pow((p2(0)-p1(0)), 2) + pow((p2(1)-p1(1)), 2));
 }
 
-void simplePursuit::init(Vector2d *iPath, uint8_t iPathSize, double iTargetTime) {
+void simplePursuit::init(Vector2d *iPath, uint8_t iPathSize, double iTargetTime, double iFinalOffset) {
   path = iPath;
   pathSize = iPathSize;
   targetTime = iTargetTime;
+  finalOffset = iFinalOffset;
   
   prevPointIndex = 0;
   currentGoalPointIndex = 1;
@@ -26,7 +28,7 @@ void simplePursuit::init(Vector2d *iPath, uint8_t iPathSize, double iTargetTime)
   for (uint8_t i=1; i<pathSize; i++) {
     pathTotalDist += getDist(path[i], path[i-1]);
   }
-  avgVx = (pathTotalDist-85)/(targetTime - (turnInterval/pow(10,6))*(pathSize-2));
+  avgVx = (pathTotalDist-centerToDowel+finalOffset)/(targetTime - (turnInterval/pow(10,6))*(pathSize-2));
 }
 
 uint8_t simplePursuit::getPathIndexCount() {
