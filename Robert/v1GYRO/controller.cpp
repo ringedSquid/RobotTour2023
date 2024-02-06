@@ -76,8 +76,7 @@ void controller::update() {
         deltaTheta += TWO_PI;
       }
       //check if theta within desired range
-      if (abs(theta - targetTheta) > 0.000174) {
-        steppersEngaged_mtx->lock();
+      if ((abs(deltaTheta) > 0.000174) && steppersEngaged_mtx->try_lock()) {
         stepperL->move(mmToSteps(-0.5*trackWidth*deltaTheta));
         stepperR->move(mmToSteps(0.5*trackWidth*deltaTheta));
         steppersEngaged_mtx->unlock();
@@ -91,12 +90,14 @@ void controller::update() {
         
     //actually turning
     case 3:
-      if (abs(theta - targetTheta) <= 0.000174) {
-        STATE = 0;
-      }
       if (steppersEngaged_mtx->try_lock()) {
-        STATE = 2;
-        steppersEngaged_mtx->unlock();
+          //Serial.println(stepperL->isRunning());
+          //Serial.println(stepperR->isRunning());
+          if (!stepperL->isRunning() && !stepperR->isRunning()) {
+            STATE = 2;
+          }
+          //Serial.println("Done with movement");
+          steppersEngaged_mtx->unlock();
       }
       break;
       
@@ -142,6 +143,7 @@ void controller::setMaxAngVx(double newAngVx) {
 }
 
 void controller::moveX(double dist) {
+  steppersEngaged_mtx->lock();
   //set accel and vel
   stepperL->setAcceleration(mmToSteps(maxAx));
   stepperR->setAcceleration(mmToSteps(maxAx));
@@ -152,6 +154,7 @@ void controller::moveX(double dist) {
   //set wheel positions
   stepperL->move(mmToSteps(dist));
   stepperR->move(mmToSteps(dist));
+  steppersEngaged_mtx->unlock();
   xTaskCreate(engageSteppers, "engageSteppers Task", 10000, NULL, 1, engageSteppersHandle);
   STATE = 1;
 }
@@ -159,6 +162,7 @@ void controller::moveX(double dist) {
 
 void controller::setTheta(double newTheta) {
   //set accel and vel
+  steppersEngaged_mtx->lock();
   stepperL->setAcceleration(mmToSteps(maxAx));
   stepperR->setAcceleration(mmToSteps(maxAx));
   stepperL->setMaxSpeed(mmToSteps(maxAngVx));
@@ -168,6 +172,7 @@ void controller::setTheta(double newTheta) {
   //set wheel positions
   targetTheta = newTheta;
   STATE = 2;
+  steppersEngaged_mtx->unlock();
   xTaskCreate(engageSteppers, "engageSteppers Task", 10000, NULL, 1, engageSteppersHandle);
   oldus = micros();
 }

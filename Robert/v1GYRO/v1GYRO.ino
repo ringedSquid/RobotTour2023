@@ -159,7 +159,7 @@ void setup() {
   */
 }
 
-void loop() {
+void loop() { 
   switch (STATE) {
     case INIT:
       break;
@@ -199,7 +199,6 @@ void loop() {
 
     case RUNNING:
       Robot.update();
-      Serial.println(robotController.getState());
       if (BTN_STATE(1)) {
         STATE = STOPPED;
         oled.clear();
@@ -270,14 +269,11 @@ void loop() {
 }
 
 void engageSteppers(void * parameter) {
-  esp_task_wdt_init(30, false); 
+  esp_task_wdt_init(300, false);
   steppersEngaged_mtx.lock();
-  while (stepperL.isRunning() && stepperR.isRunning()) {
-    stepperL.run();
-    stepperR.run();
-  }
+  while (stepperL.run() && stepperR.run());
   stepperL.setCurrentPosition(stepperL.targetPosition());
-  stepperR.setCurrentPosition(stepperR.targetPosition());
+  stepperR.setCurrentPosition(stepperR.targetPosition()); 
   steppersEngaged_mtx.unlock();
   vTaskDelete(NULL);
 }
