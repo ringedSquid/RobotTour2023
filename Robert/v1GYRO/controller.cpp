@@ -91,6 +91,9 @@ void controller::update() {
         
     //actually turning
     case 3:
+      if (abs(theta - targetTheta) <= 0.000174) {
+        STATE = 0;
+      }
       if (steppersEngaged_mtx->try_lock()) {
         STATE = 2;
         steppersEngaged_mtx->unlock();

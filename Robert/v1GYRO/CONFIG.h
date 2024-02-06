@@ -40,7 +40,7 @@
 #define DIST_TO_DOWEL 85
 
 //Controller tuning values
-#define MAX_ACCEL 400
+#define MAX_ACCEL 300
 #define MAX_ANG_VEL 800
 #define TURN_US 2500*pow(10, 3)
 
