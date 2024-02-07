@@ -47,7 +47,8 @@ controller robotController
   IMU_UPDATE_US
 ); 
 
-simplePursuit robotSimplePursuit(TURN_US);
+simplePursuit robotSimplePursuit(MAX_VX, DIST_TO_DOWEL
+);
 
 robot Robot 
 (

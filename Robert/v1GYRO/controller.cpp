@@ -65,14 +65,16 @@ void controller::update() {
       else if (deltaTheta < -PI) {
         deltaTheta += TWO_PI;
       }
-      if (micros() - oldus > turnInterval) {
+      if (abs(targetTheta - theta) < 0.001) {
         STATE = 0;
         stepperL->setCurrentPosition(stepperL->targetPosition());
         stepperR->setCurrentPosition(stepperR->targetPosition());
       }
-      stepperL->move(mmToSteps(-0.5*trackWidth*deltaTheta));
-      stepperR->move(mmToSteps(0.5*trackWidth*deltaTheta));
-      STATE = 3;
+      else {
+        stepperL->move(mmToSteps(-0.5*trackWidth*deltaTheta));
+        stepperR->move(mmToSteps(0.5*trackWidth*deltaTheta));
+        STATE = 3;
+      }
       break;
         
     //actually turning
@@ -81,11 +83,6 @@ void controller::update() {
       stepperR->run();
       if (!(stepperL->isRunning()) && !(stepperR->isRunning())) {
         STATE = 2;
-      }
-      if (micros() - oldus > turnInterval) {
-        STATE = 0;
-        stepperL->setCurrentPosition(stepperL->targetPosition());
-        stepperR->setCurrentPosition(stepperR->targetPosition());
       }
       break;
       
@@ -156,7 +153,7 @@ void controller::setTheta(double newTheta) {
   //set wheel positions
   targetTheta = newTheta;
   STATE = 2;
-  oldus = micros();
+  //oldus = micros();
 }
 
 double controller::getMaxVx() {
@@ -173,6 +170,10 @@ double controller::getMaxAngVx() {
 
 double controller::getTheta() {
   return theta;
+}
+
+double controller::getTargetTheta() {
+  return targetTheta;
 }
 
 void controller::initTheta(double newTheta) {

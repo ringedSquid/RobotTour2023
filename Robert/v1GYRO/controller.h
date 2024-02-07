@@ -62,6 +62,7 @@ class controller {
     double getMaxAngVx();
 
     double getTheta();
+    double getTargetTheta();
 
     int getState();
 
