@@ -13,7 +13,7 @@
 #define DIR_R 27
 #define FAULT_R 33
 
-#define STEPS_PER_REV 51200
+#define STEPS_PER_REV 12800
 
 //Oled
 #define OLED_ADD 0x3C
@@ -31,7 +31,7 @@
 
 //BMI160 IMU
 #define IMU_ADDRESS 0x68
-#define IMU_UPDATE_US 10*pow(10, 3)
+#define IMU_UPDATE_US 0*pow(10, 3)
 
 //Robot physical dimensions
 //in mm
@@ -40,8 +40,8 @@
 #define DIST_TO_DOWEL 85
 
 //Controller tuning values
-#define MAX_ACCEL 300
-#define MAX_ANG_VEL 800
+#define MAX_ACCEL 800
+#define MAX_ANG_VEL 500
 #define TURN_US 2500*pow(10, 3)
 
 

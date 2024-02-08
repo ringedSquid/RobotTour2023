@@ -75,16 +75,18 @@ void controller::update() {
       else if (deltaTheta < -PI) {
         deltaTheta += TWO_PI;
       }
-      //check if theta within desired range
-      if ((abs(deltaTheta) > 0.000174) && steppersEngaged_mtx->try_lock()) {
+      if (abs(targetTheta - theta) < 0.005) {
+        STATE = 0;
+        stepperL->setCurrentPosition(stepperL->targetPosition());
+        stepperR->setCurrentPosition(stepperR->targetPosition());
+      }
+      else {
+        steppersEngaged_mtx->lock();
         stepperL->move(mmToSteps(-0.5*trackWidth*deltaTheta));
         stepperR->move(mmToSteps(0.5*trackWidth*deltaTheta));
         steppersEngaged_mtx->unlock();
         xTaskCreate(engageSteppers, "engageSteppers Task", 10000, NULL, 1, engageSteppersHandle);
         STATE = 3;
-      }
-      else {
-        STATE = 0;
       }
       break;
         
@@ -108,6 +110,7 @@ void controller::update() {
 }
 
 void controller::updateTheta() {
+  //micros() - oldIMUus > intervalIMUus
   if (micros() - oldIMUus > intervalIMUus) {
     double angVel = ((BMI160.getRotationZ() * 250.0) / 32768.0) * PI/180;
     double interval = micros() - oldIMUus;

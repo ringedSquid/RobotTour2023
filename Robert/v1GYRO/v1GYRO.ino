@@ -104,7 +104,10 @@ void setup() {
   if (!BMI160.begin(BMI160GenClass::I2C_MODE, Wire, IMU_ADDRESS)) {
     STATE = IMU_ERROR;
   }
+  BMI160.setGyroRate(13);
+  BMI160.setGyroDLPFMode(6);
   BMI160.autoCalibrateGyroOffset();
+  
 
   //SD begin
   if (SD.begin(SD_CS) == 0) {
