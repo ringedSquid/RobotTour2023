@@ -78,7 +78,7 @@ void robot::update() {
       while (deltaTheta < -PI) {
         deltaTheta += TWO_PI;
       }
-      /*
+      
       if (abs(deltaTheta) == PI) {
         dist = robotSimplePursuit->getCurrentGoalPointDist();
         if (robotSimplePursuit->atLastPoint()) {
@@ -92,10 +92,10 @@ void robot::update() {
         robotController->moveX(-dist);
         STATE = 2;
       }
-      */
-      
+      else { 
         robotController->setTheta(theta);
         STATE = 4;
+      }
       
       break;
 
