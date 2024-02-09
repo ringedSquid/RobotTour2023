@@ -106,6 +106,7 @@ void setup() {
   }
   BMI160.setGyroRate(13);
   BMI160.setGyroDLPFMode(6);
+  BMI160.setFullScaleGyroRange(2);
   BMI160.autoCalibrateGyroOffset();
   
 

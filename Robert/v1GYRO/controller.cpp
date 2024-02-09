@@ -75,7 +75,7 @@ void controller::update() {
       else if (deltaTheta < -PI) {
         deltaTheta += TWO_PI;
       }
-      if (abs(targetTheta - theta) < 0.008) {
+      if (abs(targetTheta - theta) < 0.01) {
         STATE = 0;
         stepperL->setCurrentPosition(stepperL->targetPosition());
         stepperR->setCurrentPosition(stepperR->targetPosition());
@@ -112,7 +112,7 @@ void controller::update() {
 void controller::updateTheta() {
   //micros() - oldIMUus > intervalIMUus
   if (micros() - oldIMUus > intervalIMUus) {
-    double angVel = ((BMI160.getRotationZ() * 250.0) / 32768.0) * PI/180;
+    double angVel = ((BMI160.getRotationZ() * 500.0) / 32768.0) * PI/180;
     double interval = micros() - oldIMUus;
     theta += angVel*(interval/pow(10, 6));
     while (theta > PI) {
