@@ -75,10 +75,12 @@ void controller::update() {
       else if (deltaTheta < -PI) {
         deltaTheta += TWO_PI;
       }
-      if (abs(targetTheta - theta) < 0.01) {
+      if (abs(targetTheta - theta) < 0.005) {
         STATE = 0;
+        steppersEngaged_mtx->lock();
         stepperL->setCurrentPosition(stepperL->targetPosition());
         stepperR->setCurrentPosition(stepperR->targetPosition());
+        steppersEngaged_mtx->unlock();
       }
       else {
         steppersEngaged_mtx->lock();
