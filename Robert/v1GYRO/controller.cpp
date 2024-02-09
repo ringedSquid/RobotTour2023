@@ -112,7 +112,7 @@ void controller::update() {
 void controller::updateTheta() {
   //micros() - oldIMUus > intervalIMUus
   if (micros() - oldIMUus > intervalIMUus) {
-    double angVel = ((BMI160.getRotationZ() * 500.0) / 32768.0) * PI/180;
+    double angVel = ((BMI160.getRotationZ() * 1000.0) / 32768.0) * PI/180;
     double interval = micros() - oldIMUus;
     theta += angVel*(interval/pow(10, 6));
     while (theta > PI) {
@@ -141,6 +141,10 @@ void controller::setMaxAx(double newAx) {
   maxAx = newAx;
 }
 
+void controller::setMaxAngAx(double newAngAx) {
+  maxAngAx = newAngAx;
+}
+
 void controller::setMaxAngVx(double newAngVx) {
   maxAngVx = newAngVx;
 }
@@ -166,8 +170,8 @@ void controller::moveX(double dist) {
 void controller::setTheta(double newTheta) {
   //set accel and vel
   steppersEngaged_mtx->lock();
-  stepperL->setAcceleration(mmToSteps(maxAx));
-  stepperR->setAcceleration(mmToSteps(maxAx));
+  stepperL->setAcceleration(mmToSteps(maxAngAx));
+  stepperR->setAcceleration(mmToSteps(maxAngAx));
   stepperL->setMaxSpeed(mmToSteps(maxAngVx));
   stepperR->setMaxSpeed(mmToSteps(maxAngVx));
   stepperL->setSpeed(mmToSteps(maxAngVx));
@@ -192,8 +196,16 @@ double controller::getMaxAngVx() {
   return maxAngVx;
 }
 
+double controller::getMaxAngAx() {
+  return maxAngAx;
+}
+
 double controller::getTheta() {
   return theta;
+}
+
+double controller::getTargetTheta() {
+  return targetTheta;
 }
 
 void controller::initTheta(double newTheta) {

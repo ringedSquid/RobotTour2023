@@ -4,9 +4,9 @@ using namespace Eigen;
 
 #include "simplePursuit.h"
 
-simplePursuit::simplePursuit(double iCenterToDowel, uint32_t iTurnInterval) {
+simplePursuit::simplePursuit(double iLimitVx, double iCenterToDowel) {
+  limitVx = iLimitVx;
   centerToDowel = iCenterToDowel;
-  turnInterval = iTurnInterval;
 }
 
 double simplePursuit::getDist(Vector2d p1, Vector2d p2) {
@@ -23,12 +23,12 @@ void simplePursuit::init(Vector2d *iPath, uint8_t iPathSize, double iTargetTime,
   currentGoalPointIndex = 1;
 
   //Calculate pathTotalDist and avgVx
-  pathTotalDist = 0;
+  pathTotalDist = -centerToDowel;
+  pathTotalDist += finalOffset;
   avgVx = 0;
   for (uint8_t i=1; i<pathSize; i++) {
     pathTotalDist += getDist(path[i], path[i-1]);
   }
-  avgVx = (pathTotalDist-centerToDowel+finalOffset)/(targetTime - (turnInterval/pow(10,6))*(pathSize-2));
 }
 
 uint8_t simplePursuit::getPathIndexCount() {
@@ -36,10 +36,12 @@ uint8_t simplePursuit::getPathIndexCount() {
 }
 
 void simplePursuit::nextPoint() {
+  pathTotalDist -= getDist(path[prevPointIndex], path[currentGoalPointIndex]);
   if (currentGoalPointIndex + 1 < pathSize) {
     prevPointIndex++;
     currentGoalPointIndex++;
   }
+  //decrease path distance
 }
 
 boolean simplePursuit::atLastPoint() {
@@ -57,6 +59,11 @@ double simplePursuit::getTheta() {
     );
 }
 
-double simplePursuit::getAvgVx() {
+double simplePursuit::getAvgVx(uint32_t elapsedTime) {
+  double remTime = targetTime - (elapsedTime/pow(10, 6));
+  avgVx = pathTotalDist/remTime;
+  if ((avgVx > limitVx) || (remTime < 0)) {
+    avgVx = limitVx;
+  }
   return avgVx;
 }

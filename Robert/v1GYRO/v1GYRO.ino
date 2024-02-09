@@ -58,12 +58,12 @@ controller robotController
   &engageSteppers, &engageSteppersHandle
 );
 
-simplePursuit robotSimplePursuit(DIST_TO_DOWEL, TURN_US);
+simplePursuit robotSimplePursuit(MAX_VX, DIST_TO_DOWEL);
 
 robot Robot
 (
   &robotSimplePursuit, &robotController,
-  MAX_ACCEL, MAX_ANG_VEL,
+  MAX_ACCEL, MAX_ANG_ACCEL, MAX_ANG_VEL, 
   DIST_TO_DOWEL
 );
 
@@ -104,9 +104,8 @@ void setup() {
   if (!BMI160.begin(BMI160GenClass::I2C_MODE, Wire, IMU_ADDRESS)) {
     STATE = IMU_ERROR;
   }
-  BMI160.setGyroRate(13);
-  BMI160.setGyroDLPFMode(6);
-  BMI160.setFullScaleGyroRange(2);
+  BMI160.setGyroRate(10);
+  BMI160.setFullScaleGyroRange(1); //1000 deg/s
   BMI160.autoCalibrateGyroOffset();
   
 

@@ -9,17 +9,17 @@ using namespace Eigen;
 
 class simplePursuit {
   private:
-    double centerToDowel;
-    double finalOffset;
-    
     Vector2d *path;
 
     uint8_t pathSize;
     uint8_t prevPointIndex;
     uint8_t currentGoalPointIndex;
 
+    double centerToDowel; 
     double pathTotalDist; 
     double targetTime;
+
+    double finalOffset;
 
     //Calculated at init()
     double avgVx;
@@ -27,11 +27,12 @@ class simplePursuit {
 
     //in us
     uint32_t turnInterval;
-   
+    double limitVx;
+    
     double getDist(Vector2d p1, Vector2d p2);
     
   public:
-    simplePursuit(double iCenterToDowel, uint32_t iTurnInterval);
+    simplePursuit(double iLimitVx, double iCenterToDowel);
     
     void init(Vector2d *iPath, uint8_t iPathSize, double iTargetTime, double iFinalOffset);
 
@@ -48,7 +49,7 @@ class simplePursuit {
     double getTheta();
 
     //Average speed needed to complete track on time
-    double getAvgVx();
+    double getAvgVx(uint32_t elapsedTime);
 };
 
 #endif

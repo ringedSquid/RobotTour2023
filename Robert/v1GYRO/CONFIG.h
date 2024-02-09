@@ -41,7 +41,11 @@
 
 //Controller tuning values
 #define MAX_ACCEL 400
+#define MAX_VX 5000
+
+#define MAX_ANG_ACCEL 400
 #define MAX_ANG_VEL 1000
+//Not used
 #define TURN_US 2500*pow(10, 3)
 
 

@@ -22,12 +22,13 @@ class robot {
     double finalOffset;
 
     double maxAx;
+    double maxAngAx;
     double maxAngVx;
     
   public:
     robot( 
       simplePursuit *iSimplePursuit, controller *iController,
-      double iMaxAx, double iMaxAngVx,
+      double iMaxAx, double iMaxAngAx, double iMaxAngVx,
       double iCenterToDowel
       );
       

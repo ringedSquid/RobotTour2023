@@ -19,6 +19,7 @@ class controller {
 
     //Rad/s
     double maxAngVx;
+    double maxAngAx;
     
     uint32_t oldus;
     uint32_t oldIMUus;
@@ -57,6 +58,7 @@ class controller {
 
     void setMaxVx(double newVx);
     void setMaxAx(double newAx);
+    void setMaxAngAx(double newAngAx);
     void setMaxAngVx(double newAngVx);
 
     //Motion profiled
@@ -67,9 +69,11 @@ class controller {
 
     double getMaxVx();
     double getMaxAx();
+    double getMaxAngAx();
     double getMaxAngVx();
 
     double getTheta();
+    double getTargetTheta();
 
     int getState();
 

@@ -5,13 +5,14 @@
 robot::robot
 ( 
   simplePursuit *iSimplePursuit, controller *iController,
-  double iMaxAx, double iMaxAngVx,
+  double iMaxAx, double iMaxAngAx, double iMaxAngVx,
   double iCenterToDowel
 )
 {
   robotSimplePursuit = iSimplePursuit;
   robotController = iController;
   maxAx = iMaxAx;
+  maxAngAx = iMaxAngAx;
   maxAngVx = iMaxAngVx;
   centerToDowel = iCenterToDowel;
 }
@@ -20,6 +21,7 @@ void robot::init() {
   robotController->init(PI/2);
   robotController->setMaxAx(maxAx);
   robotController->setMaxAngVx(maxAngVx);
+  robotController->setMaxAngAx(maxAngAx);
   finalOffset = 0;
   STATE = 0;
 }
@@ -32,6 +34,7 @@ void robot::init(double iFinalOffset) {
 void robot::update() {
   double dist;
   double theta;
+  double deltaTheta;
   double vx;
   switch (STATE) {
     case 0:
@@ -44,7 +47,7 @@ void robot::update() {
         dist += finalOffset;
       }
       //vx = robotSimplePursuit->getAvgVx();
-      vx = (1*robotController->mmToSteps(dist)*robotSimplePursuit->getAvgVx());
+      vx = (2*robotController->mmToSteps(dist)*robotSimplePursuit->getAvgVx(micros()-start_us));
       vx = vx / (robotController->mmToSteps(dist) + 2*(robotController->mmToSteps(dist)/maxAx));
       robotController->setMaxVx(vx);
       robotController->moveX(dist);
@@ -66,9 +69,37 @@ void robot::update() {
     case 3:
       robotSimplePursuit->nextPoint();
       theta = robotSimplePursuit->getTheta();
-      robotController->setTheta(theta);
-      STATE = 4;
+      deltaTheta = theta - robotController->getTargetTheta();
       
+      while (deltaTheta > PI) {
+        deltaTheta -= TWO_PI;
+      }
+      while (deltaTheta < -PI) {
+        deltaTheta += TWO_PI;
+      }
+      
+      /*
+      if (abs(deltaTheta) == PI) {
+        dist = robotSimplePursuit->getCurrentGoalPointDist();
+        if (robotSimplePursuit->atLastPoint()) {
+          dist -= centerToDowel;
+          dist += finalOffset;
+        }
+        //vx = robotSimplePursuit->getAvgVx();
+        vx = (2*robotController->mmToSteps(dist)*robotSimplePursuit->getAvgVx(micros() - start_us));
+        vx = vx / (robotController->mmToSteps(dist) + 2*(robotController->mmToSteps(dist)/maxAx));
+        robotController->setMaxVx(vx);
+        robotController->moveX(-dist);
+        STATE = 2;
+      }
+      */
+      
+      //else {
+        robotController->setTheta(theta);
+        STATE = 4;
+      //}
+      break;
+
     case 4:  
       if (robotController->getState() == 0) {
         STATE = 1;
