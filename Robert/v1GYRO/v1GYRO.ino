@@ -28,6 +28,7 @@ Vector2d PATH[100]; //= {Vector2d(0, 0), Vector2d(0, 300), Vector2d(300, 300), V
 uint8_t PATH_SIZE;
 double TARGET_TIME;
 double FINAL_OFFSET;
+int PATH_MODE; 
 
 //SD Methods
 boolean loadPathFromSD(fs::FS &fs);
@@ -176,7 +177,7 @@ void loop() {
       break;
     case IDLE:
       if (BTN_STATE(1)) {
-        Robot.init(FINAL_OFFSET);
+        Robot.init(FINAL_OFFSET, PATH_MODE);
         robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME, FINAL_OFFSET);
         STATE = READY;
         oled.clear();
@@ -190,7 +191,7 @@ void loop() {
     case READY:
       //Robot.update();
       if (BTN_STATE(1)) {
-        Robot.init(FINAL_OFFSET);
+        Robot.init(FINAL_OFFSET, PATH_MODE);
         STATE = READY;
         oled.clear();
         oled.set2X();
@@ -236,7 +237,7 @@ void loop() {
         oled.println("IDLE");
       }
       if (BTN_STATE(0)) {
-        Robot.init(FINAL_OFFSET);
+        Robot.init(FINAL_OFFSET, PATH_MODE);
         robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME, FINAL_OFFSET);
         STATE = READY;
         oled.clear();
@@ -255,7 +256,7 @@ void loop() {
         oled.println("IDLE");
       }
       if (BTN_STATE(0)) {
-        Robot.init(FINAL_OFFSET);
+        Robot.init(FINAL_OFFSET, PATH_MODE);
         robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME, FINAL_OFFSET);
         STATE = READY;
         oled.clear();
@@ -306,6 +307,19 @@ boolean loadPathFromSD(fs::FS &fs) {
   }
   PATH_SIZE = 0;
   char buff[5];
+
+  //read in the mode for path following
+  while (file.available()) {
+    if (file.read() == '\n') {
+      break;
+    }
+  }
+  for (int i = 0; i < 1; i++) {
+    buff[i] = file.read();
+  }
+  
+  PATH_MODE = atoi(buff);
+  file.read();
 
   //read in the final offset
 

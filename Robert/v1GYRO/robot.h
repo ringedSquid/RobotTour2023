@@ -24,6 +24,8 @@ class robot {
     double maxAx;
     double maxAngAx;
     double maxAngVx;
+
+    int pathMode;
     
   public:
     robot( 
@@ -33,7 +35,7 @@ class robot {
       );
       
     void init();
-    void init(double iFinalOffset);
+    void init(double iFinalOffset, int iPathMode);
     void update();
     void startPath();
     double stopPath();

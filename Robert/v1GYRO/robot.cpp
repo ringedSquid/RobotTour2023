@@ -23,12 +23,14 @@ void robot::init() {
   robotController->setMaxAngVx(maxAngVx);
   robotController->setMaxAngAx(maxAngAx);
   finalOffset = 0;
+  pathMode = 0;
   STATE = 0;
 }
 
-void robot::init(double iFinalOffset) {
+void robot::init(double iFinalOffset, int iPathMode) {
   init();
   finalOffset = iFinalOffset;
+  pathMode = iPathMode;
 }
 
 void robot::update() {
@@ -79,7 +81,7 @@ void robot::update() {
       }
       
       
-      if (abs(deltaTheta) == PI) {
+      if ((abs(deltaTheta) == PI) && (pathMode == 1)) {
         dist = robotSimplePursuit->getCurrentGoalPointDist();
         if (robotSimplePursuit->atLastPoint()) {
           dist -= centerToDowel;
