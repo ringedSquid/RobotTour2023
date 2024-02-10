@@ -104,7 +104,7 @@ void setup() {
   if (!BMI160.begin(BMI160GenClass::I2C_MODE, Wire, IMU_ADDRESS)) {
     STATE = IMU_ERROR;
   }
-  BMI160.setGyroRate(11);
+  //BMI160.setGyroRate(11);
   BMI160.setFullScaleGyroRange(1); //1000 deg/s
   BMI160.autoCalibrateGyroOffset();
   
@@ -137,28 +137,36 @@ void setup() {
     oled.set2X();
     oled.println("IDLE");
   }
-
   /*
-  double a = 300;
-  double v = 127;
-  double d = 400;
-  double offset = 0.6;
+
+  delay(2000);
   robotController.init();
-  robotController.setMaxAx(a);
-  robotController.setMaxAngVx(v);
-  robotController.setMaxVx(v + offset);
-  double expected_t = (d + (v * v / a)) / v;
+  Robot.init(); 
   oled.clear();
   oled.set1X();
   oled.println("START");
-  robotController.setTheta(PI/2);
-  delay(2);
-  uint32_t oldt = micros();
-  while (robotController.getState() != 0) {
-    robotController.update();
+  for (int i=0; i<50+-; i++) {
+    robotController.setTheta(PI/2);
+    while (robotController.getState() != 0) {
+      robotController.update();
+    }
+    delay(500);
+    robotController.setTheta(0);
+    while (robotController.getState() != 0) {
+      robotController.update();
+    }
+    delay(500);
+    robotController.setTheta(PI);
+    while (robotController.getState() != 0) {
+      robotController.update();
+    }
+    delay(500);
+    robotController.setTheta(0);
+    while (robotController.getState() != 0) {
+      robotController.update();
+    }
+    delay(500);
   }
-  oled.println((micros() - oldt) / pow(10, 6));
-  oled.println(expected_t);
   */
 }
 
