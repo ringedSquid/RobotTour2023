@@ -28,7 +28,6 @@ class simplePursuit {
     //in us
     uint32_t turnInterval;
     double limitVx;
-    
     double getDist(Vector2d p1, Vector2d p2);
     
   public:

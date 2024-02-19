@@ -41,7 +41,8 @@ void robot::update() {
   switch (STATE) {
     case 0:
       break;
-      
+
+    //deciding forward movement 
     case 1:
       dist = robotSimplePursuit->getCurrentGoalPointDist();
       if (robotSimplePursuit->atLastPoint()) {
@@ -56,6 +57,7 @@ void robot::update() {
       STATE = 2;
       break;
       
+    //actually moving
     case 2:
       if (robotController->getState() == 0) {
         if (robotSimplePursuit->atLastPoint()) {
@@ -67,7 +69,8 @@ void robot::update() {
       }
       robotController->update();
       break;
-      
+
+    //deciding turns
     case 3:
       robotSimplePursuit->nextPoint();
       theta = robotSimplePursuit->getTheta();
@@ -94,7 +97,6 @@ void robot::update() {
         robotController->moveX(-dist);
         STATE = 2;
       }
-      
       
       else {
         robotController->setTheta(theta);
