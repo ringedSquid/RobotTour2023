@@ -22,17 +22,20 @@ class robot {
     double finalOffset;
 
     double maxAx;
+    double maxAngAx;
     double maxAngVx;
+
+    int pathMode;
     
   public:
     robot( 
       simplePursuit *iSimplePursuit, controller *iController,
-      double iMaxAx, double iMaxAngVx,
+      double iMaxAx, double iMaxAngAx, double iMaxAngVx,
       double iCenterToDowel
       );
       
     void init();
-    void init(double iFinalOffset);
+    void init(double iFinalOffset, int iPathMode);
     void update();
     void startPath();
     double stopPath();

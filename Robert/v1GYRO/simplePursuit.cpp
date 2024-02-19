@@ -13,16 +13,18 @@ double simplePursuit::getDist(Vector2d p1, Vector2d p2) {
   return sqrt(pow((p2(0)-p1(0)), 2) + pow((p2(1)-p1(1)), 2));
 }
 
-void simplePursuit::init(Vector2d *iPath, uint8_t iPathSize, double iTargetTime) {
+void simplePursuit::init(Vector2d *iPath, uint8_t iPathSize, double iTargetTime, double iFinalOffset) {
   path = iPath;
   pathSize = iPathSize;
   targetTime = iTargetTime;
+  finalOffset = iFinalOffset;
   
   prevPointIndex = 0;
   currentGoalPointIndex = 1;
 
   //Calculate pathTotalDist and avgVx
   pathTotalDist = -centerToDowel;
+  pathTotalDist += finalOffset;
   avgVx = 0;
   for (uint8_t i=1; i<pathSize; i++) {
     pathTotalDist += getDist(path[i], path[i-1]);

@@ -31,18 +31,22 @@
 
 //BMI160 IMU
 #define IMU_ADDRESS 0x68
-#define IMU_UPDATE_US 10*pow(10, 3)
+#define IMU_UPDATE_US 0*pow(10, 3)
 
 //Robot physical dimensions
 //in mm
 #define WHEEL_RADIUS 40.46732
-#define TRACK_WIDTH 146.5
+#define TRACK_WIDTH 146.2
 #define DIST_TO_DOWEL 85
 
 //Controller tuning values
-#define MAX_ACCEL 800
+
+#define MAX_ACCEL 1000
 #define MAX_VX 5000
-#define MAX_ANG_VEL 4000
+
+#define MAX_ANG_ACCEL 800
+#define MAX_ANG_VEL 1000
+//Not used
 #define TURN_US 2500*pow(10, 3)
 
 

@@ -1,6 +1,8 @@
 #ifndef controller_h
 #define controller_h
 
+#include <mutex>
+
 #include <Arduino.h>
 #include <AccelStepper.h>
 #include <BMI160Gen.h>
@@ -17,6 +19,7 @@ class controller {
 
     //Rad/s
     double maxAngVx;
+    double maxAngAx;
     
     uint32_t oldus;
     uint32_t oldIMUus;
@@ -35,12 +38,18 @@ class controller {
     //1 is moving
     int STATE;
 
+    std::mutex *steppersEngaged_mtx;
+    void (*engageSteppers)(void * parameter);
+    TaskHandle_t *engageSteppersHandle;
+
   public:
     controller(
       double iWheelRadius, double iTrackWidth,
       AccelStepper *iStepperL, AccelStepper *iStepperR,
       uint32_t iStepsPerRev, uint32_t iTurnInterval,
-      uint32_t iIntervalIMUussd
+      uint32_t iIntervalIMUussd, std::mutex *iSteppersEngaged_mtx,
+      void (*iEngageSteppers)(void * parameter),
+      TaskHandle_t *iEngageSteppersHandle
     );
 
     void init(double iTheta);
@@ -49,6 +58,7 @@ class controller {
 
     void setMaxVx(double newVx);
     void setMaxAx(double newAx);
+    void setMaxAngAx(double newAngAx);
     void setMaxAngVx(double newAngVx);
 
     //Motion profiled
@@ -59,6 +69,7 @@ class controller {
 
     double getMaxVx();
     double getMaxAx();
+    double getMaxAngAx();
     double getMaxAngVx();
 
     double getTheta();

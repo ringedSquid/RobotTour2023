@@ -1,3 +1,5 @@
+#include <mutex>
+
 #include <Arduino.h>
 #include <AccelStepper.h>
 #include "controller.h"
@@ -8,7 +10,9 @@ controller::controller
   double iWheelRadius, double iTrackWidth,
   AccelStepper *iStepperL, AccelStepper *iStepperR,
   uint32_t iStepsPerRev, uint32_t iTurnInterval,
-  uint32_t iIntervalIMUus
+  uint32_t iIntervalIMUus, std::mutex *iSteppersEngaged_mtx,
+  void (*iEngageSteppers)(void * parameter),
+  TaskHandle_t *iEngageSteppersHandle
 ) 
 {
   wheelRadius = iWheelRadius;
@@ -18,6 +22,9 @@ controller::controller
   stepsPerRev = iStepsPerRev;
   turnInterval = iTurnInterval;
   intervalIMUus = iIntervalIMUus;
+  steppersEngaged_mtx = iSteppersEngaged_mtx;
+  engageSteppers = iEngageSteppers;
+  engageSteppersHandle = iEngageSteppersHandle;
 }
 
 void controller::init(double iTheta) {
@@ -28,9 +35,11 @@ void controller::init(double iTheta) {
 
 void controller::init() {
   //init steppers
+  steppersEngaged_mtx->lock();
   stepperR->setPinsInverted(true);
   stepperL->setMinPulseWidth(2);
   stepperR->setMinPulseWidth(2);
+  steppersEngaged_mtx->unlock();
   //init values
   maxVx = 0;
   maxAx = 0;
@@ -45,19 +54,21 @@ void controller::init() {
 void controller::update() {
   updateTheta();
   double deltaTheta = targetTheta - theta;
+  //Serial.println(deltaTheta);
   switch (STATE) {
     case 0:
       break;
       
     case 1:
-      stepperL->run();
-      stepperR->run();
-      if (!(stepperL->isRunning()) && !(stepperR->isRunning())) {
+      //stepperL->run();
+      //stepperR->run();
+      if (steppersEngaged_mtx->try_lock()) {
         STATE = 0;
+        steppersEngaged_mtx->unlock();
       }
       break;
+      
     //deciding turn
-    
     case 2:
       if (deltaTheta > PI) {
          deltaTheta -= TWO_PI;
@@ -65,25 +76,34 @@ void controller::update() {
       else if (deltaTheta < -PI) {
         deltaTheta += TWO_PI;
       }
-      if (abs(targetTheta - theta) < 0.0005) {
-        STATE = 0;
+      if (abs(targetTheta - theta) < 0.028) {
+        steppersEngaged_mtx->lock();
         stepperL->setCurrentPosition(stepperL->targetPosition());
         stepperR->setCurrentPosition(stepperR->targetPosition());
+        steppersEngaged_mtx->unlock();
+        STATE = 0;
       }
       else {
+        steppersEngaged_mtx->lock();
+        stepperL->setCurrentPosition(stepperL->targetPosition());
+        stepperR->setCurrentPosition(stepperR->targetPosition());
         stepperL->move(mmToSteps(-0.5*trackWidth*deltaTheta));
         stepperR->move(mmToSteps(0.5*trackWidth*deltaTheta));
+        steppersEngaged_mtx->unlock();
+        xTaskCreatePinnedToCore(engageSteppers, "engageSteppers Task", 10000, NULL, 1, engageSteppersHandle, 1);
         STATE = 3;
       }
       break;
         
     //actually turning
     case 3:
-      stepperL->run();
-      stepperR->run();
-      if (!(stepperL->isRunning()) && !(stepperR->isRunning())) {
-        STATE = 2;
-      }
+      if (steppersEngaged_mtx->try_lock()) {
+          if (!stepperL->isRunning() && !stepperR->isRunning()) {
+            STATE = 2;
+          }
+          //Serial.println("Done with movement");
+          steppersEngaged_mtx->unlock();
+      }      
       break;
       
     default:
@@ -93,8 +113,9 @@ void controller::update() {
 }
 
 void controller::updateTheta() {
+  //micros() - oldIMUus > intervalIMUus
   if (micros() - oldIMUus > intervalIMUus) {
-    double angVel = ((BMI160.getRotationZ() * 250.0) / 32768.0) * PI/180;
+    double angVel = ((BMI160.getRotationZ() * 1000.0) / 32768.0) * PI/180;
     double interval = micros() - oldIMUus;
     theta += angVel*(interval/pow(10, 6));
     while (theta > PI) {
@@ -123,11 +144,16 @@ void controller::setMaxAx(double newAx) {
   maxAx = newAx;
 }
 
+void controller::setMaxAngAx(double newAngAx) {
+  maxAngAx = newAngAx;
+}
+
 void controller::setMaxAngVx(double newAngVx) {
   maxAngVx = newAngVx;
 }
 
 void controller::moveX(double dist) {
+  steppersEngaged_mtx->lock();
   //set accel and vel
   stepperL->setAcceleration(mmToSteps(maxAx));
   stepperR->setAcceleration(mmToSteps(maxAx));
@@ -138,22 +164,33 @@ void controller::moveX(double dist) {
   //set wheel positions
   stepperL->move(mmToSteps(dist));
   stepperR->move(mmToSteps(dist));
+  steppersEngaged_mtx->unlock();
+  xTaskCreatePinnedToCore(engageSteppers, "engageSteppers Task", 10000, NULL, 1, engageSteppersHandle, 1);
   STATE = 1;
 }
 
 
 void controller::setTheta(double newTheta) {
   //set accel and vel
-  stepperL->setAcceleration(mmToSteps(maxAx));
-  stepperR->setAcceleration(mmToSteps(maxAx));
+  steppersEngaged_mtx->lock();
+  stepperL->setAcceleration(mmToSteps(maxAngAx));
+  stepperR->setAcceleration(mmToSteps(maxAngAx));
   stepperL->setMaxSpeed(mmToSteps(maxAngVx));
   stepperR->setMaxSpeed(mmToSteps(maxAngVx));
   stepperL->setSpeed(mmToSteps(maxAngVx));
   stepperR->setSpeed(mmToSteps(maxAngVx));
   //set wheel positions
   targetTheta = newTheta;
+  while (targetTheta > PI) {
+      targetTheta -= TWO_PI;
+  }
+  while (targetTheta < -PI) {
+      targetTheta += TWO_PI;
+  }
+  steppersEngaged_mtx->unlock();
+  xTaskCreatePinnedToCore(engageSteppers, "engageSteppers Task", 10000, NULL, 1, engageSteppersHandle, 1);
+  oldus = micros();
   STATE = 2;
-  //oldus = micros();
 }
 
 double controller::getMaxVx() {
@@ -166,6 +203,10 @@ double controller::getMaxAx() {
 
 double controller::getMaxAngVx() {
   return maxAngVx;
+}
+
+double controller::getMaxAngAx() {
+  return maxAngAx;
 }
 
 double controller::getTheta() {
