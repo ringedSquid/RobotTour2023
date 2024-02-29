@@ -155,11 +155,11 @@ void controller::setMaxAngVx(double newAngVx) {
 void controller::moveX(double dist) {
   steppersEngaged_mtx->lock();
   //set accel and vel
-  stepperL->setAcceleration(mmToSteps(maxAx));
+  stepperL->setAcceleration(mmToSteps(maxAx+10));
   stepperR->setAcceleration(mmToSteps(maxAx));
-  stepperL->setMaxSpeed(mmToSteps(maxVx));
+  stepperL->setMaxSpeed(mmToSteps(maxVx+10));
   stepperR->setMaxSpeed(mmToSteps(maxVx));
-  stepperL->setSpeed(mmToSteps(maxVx));
+  stepperL->setSpeed(mmToSteps(maxVx+10));
   stepperR->setSpeed(mmToSteps(maxVx));
   //set wheel positions
   stepperL->move(mmToSteps(dist));

@@ -73,8 +73,7 @@ void robot::update() {
     //deciding turns
     case 3:
       robotSimplePursuit->nextPoint();
-      theta = robotSimplePursuit->getTheta();
-      deltaTheta = theta - robotController->getTargetTheta();
+      deltaTheta = robotSimplePursuit->getTheta() - robotController->getTargetTheta();
       
       while (deltaTheta > PI) {
         deltaTheta -= TWO_PI;
@@ -84,12 +83,13 @@ void robot::update() {
       }
 
       //correct heading first;
-      if (((abs(deltaTheta) == PI) && (pathMode == 1)) && (robotSimplePursuit->isAGate())) {
-        robotController->setTheta(theta-deltaTheta);
+      if (((abs(deltaTheta) == PI) && (pathMode == 1)) && !(robotSimplePursuit->isAGate())) {
+        robotController->setTheta(theta);
         STATE = 5;
       }
-      
+
       else {
+        theta = robotSimplePursuit->getTheta();
         robotController->setTheta(theta);
         STATE = 4;
       }
@@ -118,6 +118,7 @@ void robot::update() {
         STATE = 2;
       }
       robotController->update();
+      break;
       
       
     default:
