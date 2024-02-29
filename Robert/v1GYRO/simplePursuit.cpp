@@ -13,9 +13,11 @@ double simplePursuit::getDist(Vector2d p1, Vector2d p2) {
   return sqrt(pow((p2(0)-p1(0)), 2) + pow((p2(1)-p1(1)), 2));
 }
 
-void simplePursuit::init(Vector2d *iPath, uint8_t iPathSize, double iTargetTime, double iFinalOffset) {
+void simplePursuit::init(Vector2d *iPath, uint8_t iPathSize, Vector2d *iGates, uint8_t iGateSize, double iTargetTime, double iFinalOffset) {
   path = iPath;
   pathSize = iPathSize;
+  gates = iGates;
+  gateSize = iGateSize;
   targetTime = iTargetTime;
   finalOffset = iFinalOffset;
   
@@ -46,6 +48,15 @@ void simplePursuit::nextPoint() {
 
 boolean simplePursuit::atLastPoint() {
   return (currentGoalPointIndex == pathSize-1);
+}
+
+boolean simplePursuit::isAGate() {
+  for (uint8_t i=0; i<gateSize; i++) {
+    if (path[currentGoalPointIndex] == gates[i]) {
+      return true;
+    }
+  }
+  return false;
 }
 
 double simplePursuit::getCurrentGoalPointDist() {

@@ -10,8 +10,10 @@ using namespace Eigen;
 class simplePursuit {
   private:
     Vector2d *path;
+    Vector2d *gates;
 
     uint8_t pathSize;
+    uint8_t gateSize;
     uint8_t prevPointIndex;
     uint8_t currentGoalPointIndex;
 
@@ -33,7 +35,7 @@ class simplePursuit {
   public:
     simplePursuit(double iLimitVx, double iCenterToDowel);
     
-    void init(Vector2d *iPath, uint8_t iPathSize, double iTargetTime, double iFinalOffset);
+    void init(Vector2d *iPath, uint8_t iPathSize, Vector2d *iGates, uint8_t iGateSize, double iTargetTime, double iFinalOffset);
 
     //get index of path
     uint8_t getPathIndexCount();
@@ -41,6 +43,7 @@ class simplePursuit {
     //True if not the end of the path, false if it is
     void nextPoint();
     boolean atLastPoint();
+    boolean isAGate();
 
     //Distance needed to be traveled from point a to b
     double getCurrentGoalPointDist();
@@ -49,6 +52,7 @@ class simplePursuit {
 
     //Average speed needed to complete track on time
     double getAvgVx(uint32_t elapsedTime);
+
 };
 
 #endif

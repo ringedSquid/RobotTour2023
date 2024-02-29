@@ -26,6 +26,12 @@ int STATE;
 //Path globals
 Vector2d PATH[100]; //= {Vector2d(0, 0), Vector2d(0, 300), Vector2d(300, 300), Vector2d(300, 0), Vector2d(0, 0)};
 uint8_t PATH_SIZE;
+
+//Gates
+Vector2d GATES[6];
+uint8_t GATE_SIZE;
+
+//Paramters
 double TARGET_TIME;
 double FINAL_OFFSET;
 int PATH_MODE; 
@@ -178,7 +184,7 @@ void loop() {
     case IDLE:
       if (BTN_STATE(1)) {
         Robot.init(FINAL_OFFSET, PATH_MODE);
-        robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME, FINAL_OFFSET);
+        robotSimplePursuit.init(PATH, PATH_SIZE, GATES, GATE_SIZE, TARGET_TIME, FINAL_OFFSET);
         STATE = READY;
         oled.clear();
         oled.set2X();
@@ -238,7 +244,7 @@ void loop() {
       }
       if (BTN_STATE(0)) {
         Robot.init(FINAL_OFFSET, PATH_MODE);
-        robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME, FINAL_OFFSET);
+        robotSimplePursuit.init(PATH, PATH_SIZE, GATES, GATE_SIZE, TARGET_TIME, FINAL_OFFSET);
         STATE = READY;
         oled.clear();
         oled.set2X();
@@ -257,7 +263,7 @@ void loop() {
       }
       if (BTN_STATE(0)) {
         Robot.init(FINAL_OFFSET, PATH_MODE);
-        robotSimplePursuit.init(PATH, PATH_SIZE, TARGET_TIME, FINAL_OFFSET);
+        robotSimplePursuit.init(PATH, PATH_SIZE, GATES, GATE_SIZE, TARGET_TIME, FINAL_OFFSET);
         STATE = READY;
         oled.clear();
         oled.set2X();
@@ -350,6 +356,75 @@ boolean loadPathFromSD(fs::FS &fs) {
   file.read();
 
   //skip line
+  while (file.available()) {
+    if (file.read() == '\n') {
+      break;
+    }
+  }
+
+  //read in gate number
+  buff[0] = '0';
+  buff[1] = file.read();
+  GATE_SIZE = atoi(buff);
+  file.read();
+  
+  //Skip line
+  while (file.available()) {
+    if (file.read() == '\n') {
+      break;
+    }
+  }
+
+  //Read in Gates
+  for (byte i=0; i<GATE_SIZE; i++) {
+    buff[0] = file.read();
+    buff[1] = file.read();
+    //coords
+    double pX, pY;
+    switch (buff[0]) {
+        case 'A':
+          pX = 250;
+          break;
+        case 'B':
+          pX = 750;
+          break;
+        case 'C':
+          pX = 1250;
+          break;
+        case 'D':
+          pX = 1750;
+          break;
+        default:
+          return false;
+      }
+      switch (buff[1]) {
+        case '1':
+          pY = 250;
+          break;
+        case '2':
+          pY = 750;
+          break;
+        case '3':
+          pY = 1250;
+          break;
+        case '4':
+          pY = 1750;
+          break;
+        default:
+          return false;
+      }
+      
+     GATES[i] = Vector2d(pX, pY);
+
+     //Skip to next line
+     while (file.available()) {
+      if (file.read() == '\n') {
+        break;
+      }
+    }
+  }
+
+  //Skip line
   while (file.available()) {
     if (file.read() == '\n') {
       break;
