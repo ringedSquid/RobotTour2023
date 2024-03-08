@@ -36,7 +36,7 @@ void controller::init(double iTheta) {
 void controller::init() {
   //init steppers
   steppersEngaged_mtx->lock();
-  stepperR->setPinsInverted(true);
+  stepperL->setPinsInverted(true);
   stepperL->setMinPulseWidth(2);
   stepperR->setMinPulseWidth(2);
   steppersEngaged_mtx->unlock();
@@ -76,7 +76,7 @@ void controller::update() {
       else if (deltaTheta < -PI) {
         deltaTheta += TWO_PI;
       }
-      if (abs(targetTheta - theta) < 0.028) {
+      if (abs(targetTheta - theta) < 0.001) {
         steppersEngaged_mtx->lock();
         stepperL->setCurrentPosition(stepperL->targetPosition());
         stepperR->setCurrentPosition(stepperR->targetPosition());
@@ -155,12 +155,12 @@ void controller::setMaxAngVx(double newAngVx) {
 void controller::moveX(double dist) {
   steppersEngaged_mtx->lock();
   //set accel and vel
-  stepperL->setAcceleration(mmToSteps(maxAx+10));
-  stepperR->setAcceleration(mmToSteps(maxAx));
-  stepperL->setMaxSpeed(mmToSteps(maxVx+10));
-  stepperR->setMaxSpeed(mmToSteps(maxVx));
-  stepperL->setSpeed(mmToSteps(maxVx+10));
-  stepperR->setSpeed(mmToSteps(maxVx));
+  stepperL->setAcceleration(mmToSteps(maxAx));
+  stepperR->setAcceleration(mmToSteps(maxAx+10));
+  stepperL->setMaxSpeed(mmToSteps(maxVx));
+  stepperR->setMaxSpeed(mmToSteps(maxVx+10));
+  stepperL->setSpeed(mmToSteps(maxVx));
+  stepperR->setSpeed(mmToSteps(maxVx+10));
   //set wheel positions
   stepperL->move(mmToSteps(dist));
   stepperR->move(mmToSteps(dist));

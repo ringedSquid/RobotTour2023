@@ -13,7 +13,9 @@
 #define DIR_R 27
 #define FAULT_R 33
 
-#define STEPS_PER_REV 12800
+#define STEP_ENABLE 16
+
+#define STEPS_PER_REV 25600
 
 //Oled
 #define OLED_ADD 0x3C
@@ -30,13 +32,14 @@
 #define I2C_ADDRESS 0x3C
 
 //BMI160 IMU
+#define IMU_GND 4
 #define IMU_ADDRESS 0x68
-#define IMU_UPDATE_US 0*pow(10, 3)
+#define IMU_UPDATE_US 0.01*pow(10, 3)
 
 //Robot physical dimensions
 //in mm
-#define WHEEL_RADIUS 40.46732
-#define TRACK_WIDTH 146.2
+#define WHEEL_RADIUS 40
+#define TRACK_WIDTH 145.8
 #define DIST_TO_DOWEL 85
 
 //Controller tuning values

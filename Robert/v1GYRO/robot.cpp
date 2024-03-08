@@ -22,14 +22,16 @@ void robot::init() {
   robotController->setMaxAx(maxAx);
   robotController->setMaxAngVx(maxAngVx);
   robotController->setMaxAngAx(maxAngAx);
-  finalOffset = 0;
+  finalOffsetY = 0;
+  finalOffsetX = 0;
   pathMode = 0;
   STATE = 0;
 }
 
-void robot::init(double iFinalOffset, int iPathMode) {
+void robot::init(double iFinalOffsetY, double iFinalOffsetX, int iPathMode) {
   init();
-  finalOffset = iFinalOffset;
+  finalOffsetY = iFinalOffsetY;
+  finalOffsetX = iFinalOffsetX;
   pathMode = iPathMode;
 }
 
@@ -38,6 +40,7 @@ void robot::update() {
   double theta;
   double deltaTheta;
   double vx;
+  double l;
   switch (STATE) {
     case 0:
       break;
@@ -46,8 +49,9 @@ void robot::update() {
     case 1:
       dist = robotSimplePursuit->getCurrentGoalPointDist();
       if (robotSimplePursuit->atLastPoint()) {
-        dist -= centerToDowel;
-        dist += finalOffset;
+        //dist -= centerToDowel;
+        l = finalOffsetY - sqrt(pow(centerToDowel, 2) - pow(finalOffsetX, 2));
+        dist += l;
       }
       //vx = robotSimplePursuit->getAvgVx();
       vx = (2*robotController->mmToSteps(dist)*robotSimplePursuit->getAvgVx(micros()-start_us));
@@ -56,42 +60,46 @@ void robot::update() {
       robotController->moveX(dist);
       STATE = 2;
       break;
-      
     //actually moving
     case 2:
       if (robotController->getState() == 0) {
-        if (robotSimplePursuit->atLastPoint()) {
-          STATE = 0;
-        }
-        else {
-          STATE = 3;
-        }
+        STATE = 3;
       }
       robotController->update();
       break;
 
     //deciding turns
     case 3:
-      robotSimplePursuit->nextPoint();
-      deltaTheta = robotSimplePursuit->getTheta() - robotController->getTargetTheta();
+      if (robotSimplePursuit->atLastPoint()) {
+          theta = robotController->getTheta();
+          l = finalOffsetY + centerToDowel - sqrt(pow(centerToDowel, 2) - pow(finalOffsetX, 2));
+          deltaTheta = theta + atan2(l, finalOffsetX);
+          robotController->setTheta(deltaTheta);
+          STATE = 6;
       
-      while (deltaTheta > PI) {
-        deltaTheta -= TWO_PI;
       }
-      while (deltaTheta < -PI) {
-        deltaTheta += TWO_PI;
-      }
-
-      //correct heading first;
-      if (((abs(deltaTheta) == PI) && (pathMode == 1)) && !(robotSimplePursuit->isAGate())) {
-        robotController->setTheta(theta);
-        STATE = 5;
-      }
-
       else {
-        theta = robotSimplePursuit->getTheta();
-        robotController->setTheta(theta);
-        STATE = 4;
+        robotSimplePursuit->nextPoint();
+        deltaTheta = robotSimplePursuit->getTheta() - robotController->getTargetTheta();
+        
+        while (deltaTheta > PI) {
+          deltaTheta -= TWO_PI;
+        }
+        while (deltaTheta < -PI) {
+          deltaTheta += TWO_PI;
+        }
+  
+        //correct heading first;
+        if (((abs(deltaTheta) == PI) && (pathMode == 1)) && !(robotSimplePursuit->isAGate())) {
+          robotController->setTheta(theta);
+          STATE = 5;
+        }
+  
+        else {
+          theta = robotSimplePursuit->getTheta();
+          robotController->setTheta(theta);
+          STATE = 4;
+        }
       }
       break;
 
@@ -106,10 +114,12 @@ void robot::update() {
       //go backwards
       if (robotController->getState() == 0) {
         dist = robotSimplePursuit->getCurrentGoalPointDist();
+        /*
         if (robotSimplePursuit->atLastPoint()) {
           dist -= centerToDowel;
           dist += finalOffset;
         }
+        */
         //vx = robotSimplePursuit->getAvgVx();
         vx = (2*robotController->mmToSteps(dist)*robotSimplePursuit->getAvgVx(micros() - start_us));
         vx = vx / (robotController->mmToSteps(dist) + 2*(robotController->mmToSteps(dist)/maxAx));
@@ -119,7 +129,13 @@ void robot::update() {
       }
       robotController->update();
       break;
-      
+
+    //terminal turn
+    case 6:
+      if (robotController->getState() == 0) {
+        STATE = 0;
+      }
+      robotController->update();
       
     default:
       STATE = 0;

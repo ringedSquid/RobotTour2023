@@ -21,7 +21,8 @@ class simplePursuit {
     double pathTotalDist; 
     double targetTime;
 
-    double finalOffset;
+    double finalOffsetX;
+    double finalOffsetY;
 
     //Calculated at init()
     double avgVx;
@@ -35,7 +36,7 @@ class simplePursuit {
   public:
     simplePursuit(double iLimitVx, double iCenterToDowel);
     
-    void init(Vector2d *iPath, uint8_t iPathSize, Vector2d *iGates, uint8_t iGateSize, double iTargetTime, double iFinalOffset);
+    void init(Vector2d *iPath, uint8_t iPathSize, Vector2d *iGates, uint8_t iGateSize, double iTargetTime, double iFinalOffsetY, double iFinalOffsetX);
 
     //get index of path
     uint8_t getPathIndexCount();

@@ -33,7 +33,8 @@ uint8_t GATE_SIZE;
 
 //Paramters
 double TARGET_TIME;
-double FINAL_OFFSET;
+double FINAL_OFFSET_Y;
+double FINAL_OFFSET_X;
 int PATH_MODE; 
 
 //SD Methods
@@ -93,8 +94,14 @@ void setup() {
   pinMode(FAULT_L, INPUT);
   pinMode(FAULT_R, INPUT);
 
+  pinMode(STEP_ENABLE, OUTPUT);
+  digitalWrite(STEP_ENABLE, LOW);
+
   pinMode(LED_0, OUTPUT);
   pinMode(LED_1, OUTPUT);
+
+  pinMode(IMU_GND, OUTPUT);
+  digitalWrite(IMU_GND, LOW);
 
   //oled init
   oled.begin(&Adafruit128x32, I2C_ADDRESS, OLED_RST);
@@ -144,15 +151,16 @@ void setup() {
     oled.set2X();
     oled.println("IDLE");
   }
-  /*
-
+  
+/*
   delay(2000);
   robotController.init();
   Robot.init(); 
   oled.clear();
   oled.set1X();
   oled.println("START");
-  for (int i=0; i<50+-; i++) {
+  digitalWrite(STEP_ENABLE, HIGH);
+  for (int i=0; i<50; i++) {
     robotController.setTheta(PI/2);
     while (robotController.getState() != 0) {
       robotController.update();
@@ -175,6 +183,7 @@ void setup() {
     delay(500);
   }
   */
+  
 }
 
 void loop() { 
@@ -183,9 +192,10 @@ void loop() {
       break;
     case IDLE:
       if (BTN_STATE(1)) {
-        Robot.init(FINAL_OFFSET, PATH_MODE);
-        robotSimplePursuit.init(PATH, PATH_SIZE, GATES, GATE_SIZE, TARGET_TIME, FINAL_OFFSET);
+        Robot.init(FINAL_OFFSET_Y, FINAL_OFFSET_X, PATH_MODE);
+        robotSimplePursuit.init(PATH, PATH_SIZE, GATES, GATE_SIZE, TARGET_TIME, FINAL_OFFSET_Y, FINAL_OFFSET_X);
         STATE = READY;
+        digitalWrite(STEP_ENABLE, HIGH);
         oled.clear();
         oled.set2X();
         oled.println("READY");
@@ -195,10 +205,10 @@ void loop() {
       break;
 
     case READY:
-      //Robot.update();
       if (BTN_STATE(1)) {
-        Robot.init(FINAL_OFFSET, PATH_MODE);
+        Robot.init(FINAL_OFFSET_Y, FINAL_OFFSET_X, PATH_MODE);
         STATE = READY;
+        digitalWrite(STEP_ENABLE, HIGH);
         oled.clear();
         oled.set2X();
         oled.println("READY");
@@ -208,6 +218,7 @@ void loop() {
       if (BTN_STATE(0)) {
         Robot.startPath();
         STATE = RUNNING;
+        digitalWrite(STEP_ENABLE, HIGH);
         oled.clear();
         oled.set2X();
         oled.println("RUNNING");
@@ -219,6 +230,7 @@ void loop() {
       Robot.update();
       if (BTN_STATE(1)) {
         STATE = STOPPED;
+        digitalWrite(STEP_ENABLE, LOW);
         oled.clear();
         oled.set2X();
         oled.println("STOPPED");
@@ -238,14 +250,16 @@ void loop() {
     case END_RUN:
       if (BTN_STATE(1)) {
         STATE = IDLE;
+        digitalWrite(STEP_ENABLE, LOW);
         oled.clear();
         oled.set2X();
         oled.println("IDLE");
       }
       if (BTN_STATE(0)) {
-        Robot.init(FINAL_OFFSET, PATH_MODE);
-        robotSimplePursuit.init(PATH, PATH_SIZE, GATES, GATE_SIZE, TARGET_TIME, FINAL_OFFSET);
+        Robot.init(FINAL_OFFSET_Y, FINAL_OFFSET_X, PATH_MODE);
+        robotSimplePursuit.init(PATH, PATH_SIZE, GATES, GATE_SIZE, TARGET_TIME, FINAL_OFFSET_Y, FINAL_OFFSET_X);
         STATE = READY;
+        digitalWrite(STEP_ENABLE, HIGH);
         oled.clear();
         oled.set2X();
         oled.println("READY");
@@ -262,9 +276,10 @@ void loop() {
         oled.println("IDLE");
       }
       if (BTN_STATE(0)) {
-        Robot.init(FINAL_OFFSET, PATH_MODE);
-        robotSimplePursuit.init(PATH, PATH_SIZE, GATES, GATE_SIZE, TARGET_TIME, FINAL_OFFSET);
+        Robot.init(FINAL_OFFSET_Y, FINAL_OFFSET_X, PATH_MODE);
+        robotSimplePursuit.init(PATH, PATH_SIZE, GATES, GATE_SIZE, TARGET_TIME, FINAL_OFFSET_Y, FINAL_OFFSET_X);
         STATE = READY;
+        digitalWrite(STEP_ENABLE, LOW);
         oled.clear();
         oled.set2X();
         oled.println("READY");
@@ -327,7 +342,7 @@ boolean loadPathFromSD(fs::FS &fs) {
   PATH_MODE = atoi(buff);
   file.read();
 
-  //read in the final offset
+  //read in the final offset y
 
   //skip first line until newline is reached
   while (file.available()) {
@@ -338,7 +353,21 @@ boolean loadPathFromSD(fs::FS &fs) {
   for (int i = 0; i < 5; i++) {
     buff[i] = file.read();
   }
-  FINAL_OFFSET = atof(buff);
+  FINAL_OFFSET_Y = atof(buff);
+  file.read();
+
+  //read in the final offset x
+
+  //skip first line until newline is reached
+  while (file.available()) {
+    if (file.read() == '\n') {
+      break;
+    }
+  }
+  for (int i = 0; i < 5; i++) {
+    buff[i] = file.read();
+  }
+  FINAL_OFFSET_X = atof(buff);
   file.read();
 
   //read in target time
