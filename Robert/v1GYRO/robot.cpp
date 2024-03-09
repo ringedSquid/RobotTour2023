@@ -71,7 +71,7 @@ void robot::update() {
     //deciding turns
     case 3:
       if (robotSimplePursuit->atLastPoint()) {
-          theta = robotController->getTheta();
+          theta = robotSimplePursuit->getTheta();
           l = finalOffsetY + centerToDowel - sqrt(pow(centerToDowel, 2) - pow(finalOffsetX, 2));
           deltaTheta = theta + atan2(l, finalOffsetX);
           robotController->setTheta(deltaTheta);
@@ -80,7 +80,9 @@ void robot::update() {
       }
       else {
         robotSimplePursuit->nextPoint();
-        deltaTheta = robotSimplePursuit->getTheta() - robotController->getTargetTheta();
+
+        theta = robotSimplePursuit->getTheta()
+        deltaTheta = robotSimplePursuit->theta - robotController->getTargetTheta();
         
         while (deltaTheta > PI) {
           deltaTheta -= TWO_PI;

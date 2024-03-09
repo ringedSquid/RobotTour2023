@@ -39,7 +39,7 @@
 //Robot physical dimensions
 //in mm
 #define WHEEL_RADIUS 40
-#define TRACK_WIDTH 145.8
+#define TRACK_WIDTH 145.9
 #define DIST_TO_DOWEL 85
 
 //Controller tuning values

@@ -350,7 +350,7 @@ boolean loadPathFromSD(fs::FS &fs) {
       break;
     }
   }
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 6; i++) {
     buff[i] = file.read();
   }
   FINAL_OFFSET_Y = atof(buff);
@@ -364,7 +364,7 @@ boolean loadPathFromSD(fs::FS &fs) {
       break;
     }
   }
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 6; i++) {
     buff[i] = file.read();
   }
   FINAL_OFFSET_X = atof(buff);
