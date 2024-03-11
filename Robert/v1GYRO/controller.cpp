@@ -5,7 +5,7 @@
 #include "controller.h"
 #include <BMI160Gen.h>
 
-#define RIGHT_OFF 15
+#define RIGHT_OFF 1.001
 
 controller::controller
 (
@@ -155,14 +155,17 @@ void controller::setMaxAngVx(double newAngVx) {
 }
 
 void controller::moveX(double dist) {
+  if (dist == 0) {
+    return;
+  }
   steppersEngaged_mtx->lock();
   //set accel and vel
   stepperL->setAcceleration(mmToSteps(maxAx));
-  stepperR->setAcceleration(mmToSteps(maxAx+RIGHT_OFF));
+  stepperR->setAcceleration(mmToSteps(maxAx*RIGHT_OFF));
   stepperL->setMaxSpeed(mmToSteps(maxVx));
-  stepperR->setMaxSpeed(mmToSteps(maxVx+RIGHT_OFF));
+  stepperR->setMaxSpeed(mmToSteps(maxVx*RIGHT_OFF));
   stepperL->setSpeed(mmToSteps(maxVx));
-  stepperR->setSpeed(mmToSteps(maxVx+RIGHT_OFF));
+  stepperR->setSpeed(mmToSteps(maxVx*RIGHT_OFF));
   //set wheel positions
   stepperL->move(mmToSteps(dist));
   stepperR->move(mmToSteps(dist));
@@ -176,11 +179,11 @@ void controller::setTheta(double newTheta) {
   //set accel and vel
   steppersEngaged_mtx->lock();
   stepperL->setAcceleration(mmToSteps(maxAngAx));
-  stepperR->setAcceleration(mmToSteps(maxAngAx+RIGHT_OFF));
+  stepperR->setAcceleration(mmToSteps(maxAngAx*RIGHT_OFF));
   stepperL->setMaxSpeed(mmToSteps(maxAngVx));
-  stepperR->setMaxSpeed(mmToSteps(maxAngVx+RIGHT_OFF));
+  stepperR->setMaxSpeed(mmToSteps(maxAngVx*RIGHT_OFF));
   stepperL->setSpeed(mmToSteps(maxAngVx));
-  stepperR->setSpeed(mmToSteps(maxAngVx+RIGHT_OFF));
+  stepperR->setSpeed(mmToSteps(maxAngVx*RIGHT_OFF));
   //set wheel positions
   targetTheta = newTheta;
   while (targetTheta > PI) {

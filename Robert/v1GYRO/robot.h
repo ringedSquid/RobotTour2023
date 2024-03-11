@@ -29,6 +29,7 @@ class robot {
 
     int pathMode;
 
+    double sgn(double n);
     
   public:
     robot( 

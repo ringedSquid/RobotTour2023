@@ -28,7 +28,7 @@ Vector2d PATH[100]; //= {Vector2d(0, 0), Vector2d(0, 300), Vector2d(300, 300), V
 uint8_t PATH_SIZE;
 
 //Gates
-Vector2d GATES[6];
+Vector2d GATES[7];
 uint8_t GATE_SIZE;
 
 //Paramters
@@ -324,10 +324,11 @@ boolean loadPathFromSD(fs::FS &fs) {
   */
   File file = fs.open(PATH_FILE);
   if (!file) {
+    Serial.println("no_file!");
     return false;
   }
   PATH_SIZE = 0;
-  char buff[5];
+  char buff[10];
 
   //read in the mode for path following
   while (file.available()) {
@@ -424,6 +425,7 @@ boolean loadPathFromSD(fs::FS &fs) {
           pX = 1750;
           break;
         default:
+          Serial.println("bad_gate!");
           return false;
       }
       switch (buff[1]) {
@@ -440,6 +442,7 @@ boolean loadPathFromSD(fs::FS &fs) {
           pY = 1750;
           break;
         default:
+          Serial.println("bad_gate!");
           return false;
       }
       
@@ -481,6 +484,7 @@ boolean loadPathFromSD(fs::FS &fs) {
           pX = 1750;
           break;
         default:
+          Serial.println("bad_path!");
           return false;
       }
       switch (buff[1]) {
@@ -497,6 +501,7 @@ boolean loadPathFromSD(fs::FS &fs) {
           pY = 1750;
           break;
         default:
+          Serial.println("bad_path!");
           return false;
       }
     }
@@ -516,6 +521,7 @@ boolean loadPathFromSD(fs::FS &fs) {
           pX = 1750;
           break;
         default:
+          Serial.println("bad_entry!");
           return false;
       }
     }

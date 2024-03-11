@@ -49,9 +49,7 @@ void robot::update() {
     case 1:
       dist = robotSimplePursuit->getCurrentGoalPointDist();
       if (robotSimplePursuit->atLastPoint()) {
-        //dist -= centerToDowel;
-        l = finalOffsetY - sqrt(pow(centerToDowel, 2) - pow(finalOffsetX, 2));
-        dist += l;
+        dist -= centerToDowel;
       }
       //vx = robotSimplePursuit->getAvgVx();
       vx = (2*robotController->mmToSteps(dist)*robotSimplePursuit->getAvgVx(micros()-start_us));
@@ -71,18 +69,16 @@ void robot::update() {
     //deciding turns
     case 3:
       if (robotSimplePursuit->atLastPoint()) {
-          theta = robotSimplePursuit->getTheta();
-          l = finalOffsetY + centerToDowel - sqrt(pow(centerToDowel, 2) - pow(finalOffsetX, 2));
-          deltaTheta = theta + atan2(l, finalOffsetX);
+          theta = robotController->getTheta();
+          deltaTheta = theta + atan2(finalOffsetY-centerToDowel, finalOffsetX+0.000001);
           robotController->setTheta(deltaTheta);
           STATE = 6;
-      
       }
       else {
         robotSimplePursuit->nextPoint();
 
-        theta = robotSimplePursuit->getTheta()
-        deltaTheta = robotSimplePursuit->theta - robotController->getTargetTheta();
+        theta = robotSimplePursuit->getTheta();
+        deltaTheta = robotSimplePursuit->getTheta() - robotController->getTargetTheta();
         
         while (deltaTheta > PI) {
           deltaTheta -= TWO_PI;
@@ -93,7 +89,7 @@ void robot::update() {
   
         //correct heading first;
         if (((abs(deltaTheta) == PI) && (pathMode == 1)) && !(robotSimplePursuit->isAGate())) {
-          robotController->setTheta(theta);
+          robotController->setTheta(robotController->getTargetTheta());
           STATE = 5;
         }
   
@@ -135,9 +131,22 @@ void robot::update() {
     //terminal turn
     case 6:
       if (robotController->getState() == 0) {
+        dist = sqrt(pow(finalOffsetY, 2) + pow(finalOffsetX, 2));
+        vx = (2*robotController->mmToSteps(dist)*robotSimplePursuit->getAvgVx(micros() - start_us));
+        vx = vx / (robotController->mmToSteps(dist) + 2*(robotController->mmToSteps(dist/maxAx)));
+        robotController->setMaxVx(vx);
+        robotController->moveX(dist);
+        STATE = 7;
+      }
+      robotController->update();
+      break;
+
+    case 7:
+      if (robotController->getState() == 0) {
         STATE = 0;
       }
       robotController->update();
+      break;
       
     default:
       STATE = 0;
@@ -157,4 +166,8 @@ double robot::stopPath() {
 
 uint8_t robot::getState() {
   return STATE;
+}
+
+double robot::sgn(double n) {
+  return (n < 0) ? -1 : 1;
 }
