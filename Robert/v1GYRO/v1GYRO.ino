@@ -192,28 +192,28 @@ void loop() {
       break;
     case IDLE:
       if (BTN_STATE(1)) {
-        Robot.init(FINAL_OFFSET_Y, FINAL_OFFSET_X, PATH_MODE);
+        Robot.init(PATH_MODE);
         robotSimplePursuit.init(PATH, PATH_SIZE, GATES, GATE_SIZE, TARGET_TIME, FINAL_OFFSET_Y, FINAL_OFFSET_X);
         STATE = READY;
         digitalWrite(STEP_ENABLE, HIGH);
         oled.clear();
-        oled.set2X();
-        oled.println("READY");
         oled.set1X();
-        oled.print("target_t: "); oled.print(TARGET_TIME);
+        oled.println("READY");
+        oled.print("target_t: "); oled.println(TARGET_TIME);
+        oled.print("x_off: "); oled.println(FINAL_OFFSET_X);
+        oled.print("y_off: "); oled.print(FINAL_OFFSET_Y);
       }
       break;
 
     case READY:
       if (BTN_STATE(1)) {
-        Robot.init(FINAL_OFFSET_Y, FINAL_OFFSET_X, PATH_MODE);
+        Robot.init(PATH_MODE);
         STATE = READY;
         digitalWrite(STEP_ENABLE, HIGH);
         oled.clear();
-        oled.set2X();
-        oled.println("READY");
-        oled.set1X();
-        oled.print("target_t: "); oled.print(TARGET_TIME);
+        oled.print("target_t: "); oled.println(TARGET_TIME);
+        oled.print("x_off: "); oled.println(FINAL_OFFSET_X);
+        oled.print("y_off: "); oled.print(FINAL_OFFSET_Y);
       }
       if (BTN_STATE(0)) {
         Robot.startPath();
@@ -248,43 +248,21 @@ void loop() {
       break;
 
     case END_RUN:
-      if (BTN_STATE(1)) {
+      if (BTN_STATE(0)) {
         STATE = IDLE;
         digitalWrite(STEP_ENABLE, LOW);
         oled.clear();
         oled.set2X();
         oled.println("IDLE");
-      }
-      if (BTN_STATE(0)) {
-        Robot.init(FINAL_OFFSET_Y, FINAL_OFFSET_X, PATH_MODE);
-        robotSimplePursuit.init(PATH, PATH_SIZE, GATES, GATE_SIZE, TARGET_TIME, FINAL_OFFSET_Y, FINAL_OFFSET_X);
-        STATE = READY;
-        digitalWrite(STEP_ENABLE, HIGH);
-        oled.clear();
-        oled.set2X();
-        oled.println("READY");
-        oled.set1X();
-        oled.print("target_t: "); oled.print(TARGET_TIME);
       }
       break;
 
     case STOPPED:
-      if (BTN_STATE(1)) {
+      if (BTN_STATE(0)) {
         STATE = IDLE;
         oled.clear();
         oled.set2X();
         oled.println("IDLE");
-      }
-      if (BTN_STATE(0)) {
-        Robot.init(FINAL_OFFSET_Y, FINAL_OFFSET_X, PATH_MODE);
-        robotSimplePursuit.init(PATH, PATH_SIZE, GATES, GATE_SIZE, TARGET_TIME, FINAL_OFFSET_Y, FINAL_OFFSET_X);
-        STATE = READY;
-        digitalWrite(STEP_ENABLE, LOW);
-        oled.clear();
-        oled.set2X();
-        oled.println("READY");
-        oled.set1X();
-        oled.print("target_t: "); oled.print(TARGET_TIME);
       }
       break;
 

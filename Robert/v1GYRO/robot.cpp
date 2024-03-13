@@ -1,4 +1,4 @@
-#include "simplePursuit.h"
+ #include "simplePursuit.h"
 #include "controller.h"
 #include "robot.h"
 
@@ -22,16 +22,12 @@ void robot::init() {
   robotController->setMaxAx(maxAx);
   robotController->setMaxAngVx(maxAngVx);
   robotController->setMaxAngAx(maxAngAx);
-  finalOffsetY = 0;
-  finalOffsetX = 0;
   pathMode = 0;
   STATE = 0;
 }
 
-void robot::init(double iFinalOffsetY, double iFinalOffsetX, int iPathMode) {
+void robot::init(int iPathMode) {
   init();
-  finalOffsetY = iFinalOffsetY;
-  finalOffsetX = iFinalOffsetX;
   pathMode = iPathMode;
 }
 
@@ -40,7 +36,6 @@ void robot::update() {
   double theta;
   double deltaTheta;
   double vx;
-  double l;
   switch (STATE) {
     case 0:
       break;
@@ -61,45 +56,41 @@ void robot::update() {
     //actually moving
     case 2:
       if (robotController->getState() == 0) {
-        STATE = 3;
+        if (robotSimplePursuit->atLastPoint()) {
+          STATE = 0;
+        }
+        else {
+          STATE = 3;
+        }
       }
       robotController->update();
       break;
 
     //deciding turns
     case 3:
-      if (robotSimplePursuit->atLastPoint()) {
-          theta = robotController->getTheta();
-          deltaTheta = theta + atan2(finalOffsetY-centerToDowel, finalOffsetX+0.000001);
-          robotController->setTheta(deltaTheta);
-          STATE = 6;
+      robotSimplePursuit->nextPoint();
+      theta = robotSimplePursuit->getTheta();
+      deltaTheta = robotSimplePursuit->getTheta() - robotController->getTargetTheta();
+    
+      while (deltaTheta > PI) {
+        deltaTheta -= TWO_PI;
       }
+      while (deltaTheta < -PI) {
+        deltaTheta += TWO_PI;
+      }
+  
+      //correct heading first;
+      if (((abs(deltaTheta) == PI) && (pathMode == 1)) && !(robotSimplePursuit->isAGate())) {
+        robotController->setTheta(robotController->getTargetTheta());
+        STATE = 5;
+      }
+  
       else {
-        robotSimplePursuit->nextPoint();
-
         theta = robotSimplePursuit->getTheta();
-        deltaTheta = robotSimplePursuit->getTheta() - robotController->getTargetTheta();
-        
-        while (deltaTheta > PI) {
-          deltaTheta -= TWO_PI;
-        }
-        while (deltaTheta < -PI) {
-          deltaTheta += TWO_PI;
-        }
-  
-        //correct heading first;
-        if (((abs(deltaTheta) == PI) && (pathMode == 1)) && !(robotSimplePursuit->isAGate())) {
-          robotController->setTheta(robotController->getTargetTheta());
-          STATE = 5;
-        }
-  
-        else {
-          theta = robotSimplePursuit->getTheta();
-          robotController->setTheta(theta);
-          STATE = 4;
-        }
+        robotController->setTheta(theta);
+        STATE = 4;
       }
-      break;
+    break;
 
     case 4:  
       if (robotController->getState() == 0) {
@@ -112,38 +103,17 @@ void robot::update() {
       //go backwards
       if (robotController->getState() == 0) {
         dist = robotSimplePursuit->getCurrentGoalPointDist();
-        /*
+
         if (robotSimplePursuit->atLastPoint()) {
           dist -= centerToDowel;
-          dist += finalOffset;
         }
-        */
+
         //vx = robotSimplePursuit->getAvgVx();
         vx = (2*robotController->mmToSteps(dist)*robotSimplePursuit->getAvgVx(micros() - start_us));
         vx = vx / (robotController->mmToSteps(dist) + 2*(robotController->mmToSteps(dist)/maxAx));
         robotController->setMaxVx(vx);
         robotController->moveX(-dist);
         STATE = 2;
-      }
-      robotController->update();
-      break;
-
-    //terminal turn
-    case 6:
-      if (robotController->getState() == 0) {
-        dist = sqrt(pow(finalOffsetY, 2) + pow(finalOffsetX, 2));
-        vx = (2*robotController->mmToSteps(dist)*robotSimplePursuit->getAvgVx(micros() - start_us));
-        vx = vx / (robotController->mmToSteps(dist) + 2*(robotController->mmToSteps(dist/maxAx)));
-        robotController->setMaxVx(vx);
-        robotController->moveX(dist);
-        STATE = 7;
-      }
-      robotController->update();
-      break;
-
-    case 7:
-      if (robotController->getState() == 0) {
-        STATE = 0;
       }
       robotController->update();
       break;

@@ -15,7 +15,7 @@
 
 #define STEP_ENABLE 16
 
-#define STEPS_PER_REV 6400
+#define STEPS_PER_REV 12800
 
 //Oled
 #define OLED_ADD 0x3C
@@ -34,7 +34,7 @@
 //BMI160 IMU
 #define IMU_GND 4
 #define IMU_ADDRESS 0x68
-#define IMU_UPDATE_US 0.00*pow(10, 3)
+#define IMU_UPDATE_US 0.0*pow(10, 3)
 
 //Robot physical dimensions
 //in mm

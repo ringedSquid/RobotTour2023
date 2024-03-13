@@ -13,6 +13,7 @@ double simplePursuit::getDist(Vector2d p1, Vector2d p2) {
   return sqrt(pow((p2(0)-p1(0)), 2) + pow((p2(1)-p1(1)), 2));
 }
 
+//path will never be larger than 100
 void simplePursuit::init(Vector2d *iPath, uint8_t iPathSize, Vector2d *iGates, uint8_t iGateSize, double iTargetTime, double iFinalOffsetY, double iFinalOffsetX) {
   path = iPath;
   pathSize = iPathSize;
@@ -24,11 +25,13 @@ void simplePursuit::init(Vector2d *iPath, uint8_t iPathSize, Vector2d *iGates, u
   
   prevPointIndex = 0;
   currentGoalPointIndex = 1;
+  
+  path[pathSize] = Vector2d(path[pathSize-1](0)+finalOffsetX, path[pathSize-1](1)+finalOffsetY);
 
   //Calculate pathTotalDist and avgVx
-  pathTotalDist += finalOffsetY - sqrt(pow(centerToDowel, 2) - pow(finalOffsetX, 2));
   avgVx = 0;
-  for (uint8_t i=1; i<pathSize; i++) {
+  pathTotalDist -= centerToDowel;
+  for (uint8_t i=1; i<pathSize+1; i++) {
     pathTotalDist += getDist(path[i], path[i-1]);
   }
 }
@@ -39,7 +42,7 @@ uint8_t simplePursuit::getPathIndexCount() {
 
 void simplePursuit::nextPoint() {
   pathTotalDist -= getDist(path[prevPointIndex], path[currentGoalPointIndex]);
-  if (currentGoalPointIndex + 1 < pathSize) {
+  if (currentGoalPointIndex < pathSize) {
     prevPointIndex++;
     currentGoalPointIndex++;
   }
@@ -47,7 +50,7 @@ void simplePursuit::nextPoint() {
 }
 
 boolean simplePursuit::atLastPoint() {
-  return (currentGoalPointIndex == pathSize-1);
+  return (currentGoalPointIndex == pathSize);
 }
 
 boolean simplePursuit::isAGate() {

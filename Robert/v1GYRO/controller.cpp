@@ -5,7 +5,7 @@
 #include "controller.h"
 #include <BMI160Gen.h>
 
-#define RIGHT_OFF 1.001
+#define RIGHT_OFF 1.00
 
 controller::controller
 (
